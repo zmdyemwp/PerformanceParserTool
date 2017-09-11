@@ -253,7 +253,7 @@ public class DetailChartPanel {
         }
 
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
-        mFocusedTable.setModel(appTM);
+        mProcDiedTable.setModel(appTM);
     }
     
     private void performParseKillList(long startTime, long endTime) {
