@@ -41,6 +41,8 @@ public final class Const {
         public static final String PROC_DIED_INFO = "Proc Died Info";
         public static final String KILL_INFO = "Kill Info";
         public static final String FOCUSED_INFO = "Focused Info";
+        public static final String PSS_INFO = "PSS Info";
+        public static final String LAUNCHTIME_INFO = "LaunchTime Info";
         
         public static final String TIME = "®É¶¡";
         public static final String MODULE_NAME = "module name";
@@ -49,6 +51,12 @@ public final class Const {
         public static final String PID = "PID";
         public static final String UID = "UID";
         public static final String USER = "User";
+        public static final String PSS = "PSS";
+        public static final String USS = "USS";
+        public static final String SWAP_PSS = "Swap PSS";
+        public static final String TOKEN = "Token";
+        public static final String CURRENT_LAUNCH_TIME = "Current Launch Time";
+        public static final String TOTAL_LAUNCH_TIME = "Total Launch Time";
         
         public static final String COMPONENT_NAME = "Component name";
         public static final String REASON = "Reason";

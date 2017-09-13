@@ -6,7 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -18,8 +18,12 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ANR;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityLaunchTime;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Crash;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.PSS;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Top;
@@ -33,12 +37,16 @@ public class DetailChartPanel {
     private JPanel mFocusedPanel;
     private JPanel mProcDiedPanel;
     private JPanel mKillPanel;
+    private JPanel mPSSPanel;
+    private JPanel mLaunchTimePanel;
 
     private JTable mCPUTopTable;
     private JTable mProcStartTable;
     private JTable mFocusedTable;
     private JTable mProcDiedTable;
     private JTable mKillTable;
+    private JTable mPSSTable;
+    private JTable mLaunchTimeTable;
 
     private JTextArea mDetailInfo;
     private JTabbedPane mTabPane;
@@ -81,24 +89,32 @@ public class DetailChartPanel {
         mFocusedPanel = new JPanel(new BorderLayout());
         mProcDiedPanel = new JPanel(new BorderLayout());
         mKillPanel = new JPanel(new BorderLayout());
+        mPSSPanel = new JPanel(new BorderLayout());
+        mLaunchTimePanel = new JPanel(new BorderLayout());
 
         mCPUTopTable = new JTable();
         mProcStartTable = new JTable();
         mFocusedTable = new JTable();
         mProcDiedTable = new JTable();
         mKillTable = new JTable();
+        mPSSTable = new JTable();
+        mLaunchTimeTable = new JTable();
 
         mCPUTopPanel.add(new JScrollPane(mCPUTopTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mProcStartPanel.add(new JScrollPane(mProcStartTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mFocusedPanel.add(new JScrollPane(mFocusedTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mProcDiedPanel.add(new JScrollPane(mProcDiedTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mKillPanel.add(new JScrollPane(mKillTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        mPSSPanel.add(new JScrollPane(mPSSTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        mLaunchTimePanel.add(new JScrollPane(mLaunchTimeTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
 
         mTabPane.addTab(Const.Panel.CPU_TOP_INFO, mCPUTopPanel);
         mTabPane.addTab(Const.Panel.PROC_START_INFO, mProcStartPanel);
         mTabPane.addTab(Const.Panel.FOCUSED_INFO, mFocusedPanel);
         mTabPane.addTab(Const.Panel.PROC_DIED_INFO, mProcDiedPanel);
         mTabPane.addTab(Const.Panel.KILL_INFO, mKillPanel);
+        mTabPane.addTab(Const.Panel.PSS_INFO, mPSSPanel);
+        mTabPane.addTab(Const.Panel.LAUNCHTIME_INFO, mLaunchTimePanel);
 
         mJPanel.add(mTabPane);
 
@@ -129,6 +145,8 @@ public class DetailChartPanel {
         mFocusedTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mProcDiedTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mKillTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        mPSSTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        mLaunchTimeTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
     }
 
     public JPanel getJPanel() {
@@ -142,15 +160,62 @@ public class DetailChartPanel {
 
         result.append(Const.Panel.TIME + ": " + format.format(startTime) + " > "
                 + format.format(endTime) + Const.Symbols.LINE);
-        
-        mDetailInfo.setText(result.toString());
+        // mDetailInfo.setText(result.toString());
 
         performParseCPUTopList(startTime, endTime);
         performParseProcStartList(startTime, endTime);
         performParseFocusedList(startTime, endTime);
         performParseProcDiedList(startTime, endTime);
         performParseKillList(startTime, endTime);
+        performParsePSSList(startTime, endTime);
+        performParseLaunchTimeList(startTime, endTime);
+        performParseANR(startTime, endTime);
+        performParseCrash(startTime, endTime);
 
+        mDetailInfo.setText(result.toString());
+    }
+
+    private class CPUStatistics {
+        CPUStatistics() {
+            user_max = user_avg = sys_max = sys_avg = io_max = io_avg = 0;
+        }
+        
+        public double user_max;
+        public double user_avg;
+        
+        public double sys_max;
+        public double sys_avg;
+        
+        public double io_max;
+        public double io_avg;
+    }
+
+    private CPUStatistics getCPUStatistics(ArrayList<Top> list) {
+        CPUStatistics result = new CPUStatistics();
+        if(0 == list.size()) {
+            return result;
+        }
+
+        for (Top top:list) {
+            result.user_avg += top.getUserUsage();
+            if(top.getUserUsage() > result.user_max) result.user_max = top.getUserUsage();
+            
+            result.sys_avg += top.getSystemUsage();
+            if(top.getUserUsage() > result.sys_max) result.sys_max = top.getSystemUsage();
+            
+            result.io_avg += top.getIOWait();
+            if(top.getUserUsage() > result.io_max) result.io_max = top.getIOWait();
+        }
+        result.user_avg /= list.size();
+        result.sys_avg /= list.size();
+        result.io_avg /= list.size();
+        
+        //debugmsg("getCPUStatistics()::" + result.toString());
+        return result;
+    }
+
+    private void debugmsg(String str) {
+        System.out.println(str);
     }
 
     private void performParseCPUTopList(long startTime, long endTime) {
@@ -161,6 +226,23 @@ public class DetailChartPanel {
             mCPUTopTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
             return;
         }
+
+        CPUStatistics cpuStat = getCPUStatistics(tops);
+        result.append(String.format(
+                "CPU Statistics:\n"
+                + "\tUser:\n"
+                + "\t\tmax: %f\n"
+                + "\t\tavg: %f\n"
+                + "\tSystem:\n"
+                + "\t\tmax: %f\n"
+                + "\t\tavg: %f\n"
+                + "\tIOWait:\n"
+                + "\t\tmax: %f\n"
+                + "\t\tavg: %f\n\n",
+                cpuStat.user_max, cpuStat.user_avg,
+                cpuStat.sys_max, cpuStat.sys_avg,
+                cpuStat.io_max, cpuStat.io_avg));
+
 
         String[] title = { Const.Panel.TIME, Const.LineTitles.TOP_SUB_IRQ, Const.LineTitles.TOP_SUB_IOWAIT,
                 Const.LineTitles.TOP_SUB_SYSTEM_USAGE, Const.LineTitles.TOP_SUB_USER_USAGE };
@@ -188,7 +270,8 @@ public class DetailChartPanel {
             mProcStartTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
             return;
         }
-            
+
+        result.append("Proc Start Count: " + procStarts.size() + "\n\n");
         
         String[] title = { Const.Panel.TIME, Const.Panel.MODULE_NAME, Const.Panel.MODULE_TYPE,
                 Const.Panel.PACKAGE_NAME, Const.Panel.PID, Const.Panel.UID, Const.Panel.USER};
@@ -241,6 +324,8 @@ public class DetailChartPanel {
             return;
         }
         
+        result.append("Proc Died Count: " + procDieds.size() + "\n\n");
+        
         String[] title = { Const.Panel.TIME, Const.Panel.PACKAGE_NAME, Const.Panel.PID, Const.Panel.USER};
 
         String[][] items = new String[procDieds.size()][title.length];
@@ -265,6 +350,8 @@ public class DetailChartPanel {
             return;
         }
         
+        result.append("Proc Killed Count: " + kills.size() + "\n\n");
+        
         String[] title = { Const.Panel.TIME, Const.Panel.PACKAGE_NAME, Const.Panel.OOM,
                 Const.Panel.PID, Const.Panel.REASON, Const.Panel.USER};
 
@@ -282,4 +369,182 @@ public class DetailChartPanel {
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
         mKillTable.setModel(appTM);
     }
+    
+    /**
+     * Sort PSS List by PSS
+     * (Implementing #1 - Quick Sort -> java.lang.StackOverflowError)
+     * (Implementing #2 - Quick Sort + in-place)
+     * (Implementing #3 - using Collections.sort)
+     * */
+    private void sortPSS(ArrayList<PSS> list) {
+        Collections.sort(list);
+    }
+    private void sortPSSUsingArrayListSorting(ArrayList<PSS> list) {
+        sortArrayList(list, 0, list.size()-1);
+    }
+    private <T extends Comparable<T>> void sortArrayList(ArrayList<T> list,  int start, int end) {
+        T temp;
+        if(0 <= start && start < end && end < list.size()) {    //  check parameters valid
+            /*
+             * 1. select the last item as the pivot in quick sorting
+             * 2. adjust the origin list except the last item
+             * 3. switch the pivot to the new position
+             */
+            int left = start;
+            int right = end -1;
+            while(left < right) {
+                while(left < right && list.get(left).compareTo(list.get(end)) < 0) {
+                    left++;
+                }
+                while(left < right && list.get(right).compareTo(list.get(end)) >= 0) {
+                    right--;
+                }
+                if(left < right) {
+                    temp = list.get(left);
+                    list.set(left, list.get(right));
+                    list.set(right, temp);
+                }
+            }
+            if(list.get(right).compareTo(list.get(end)) >= 0) {
+                temp = list.get(right);
+                list.set(right, list.get(end));
+                list.set(end, temp);
+                sortArrayList(list, start, right-1);
+                sortArrayList(list, right+1, end);
+            } else {
+                sortArrayList(list, start, end-1);
+                /*
+                 * This will be the worst case of Quick Sorting
+                 * if every time of sorting is end here
+                 * */
+            }
+        }
+    }
+    private void sortPSS(ArrayList<PSS> list, int start, int end) {
+        PSS temp;
+        // check start and end valid
+        if(0 <= start && start < end && end < list.size()) {
+            //  Select end as pivot
+            int left = start;
+            int right = end - 1;
+            while(left < right) {
+                //debugmsg(String.format("[left, right] = [%d, %d]", left, right));
+                while(left < right && list.get(left).compareTo(list.get(end)) < 0) {
+                    left++;
+                }
+                while(left < right && list.get(right).compareTo(list.get(end)) >= 0) {
+                    right--;
+                }
+                if(left < right) {
+                    temp = list.get(left);
+                    list.set(left, list.get(right));
+                    list.set(right, temp);
+                }
+            }
+            if(list.get(right).compareTo(list.get(end)) >= 0) {
+                temp = list.get(right);
+                list.set(right, list.get(end));
+                list.set(end, temp);
+                sortPSS(list, start, right-1);
+                sortPSS(list, right+1, end);
+            } else {
+                sortPSS(list, start, end-1);
+            }
+        }
+    }
+    /*
+    private ArrayList<PSS> sortPSS(ArrayList<PSS> list) {
+        ArrayList<PSS> less = new ArrayList<PSS>();
+        ArrayList<PSS> greater = new ArrayList<PSS>();
+        for(int i = 1; i < list.size(); i++) {
+            if(list.get(0).getPSS() < list.get(i).getPSS()) {
+                greater.add(list.get(i));
+            } else {
+                less.add(list.get(i));
+            }
+        }
+        ArrayList<PSS> result = new ArrayList<PSS>();
+        try {
+            result.addAll(sortPSS(less));
+            result.add(list.get(0));
+            result.addAll(sortPSS(greater));
+        } catch(Exception e) {
+            debugmsg(e.toString());
+        }
+        return result;
+    }
+    */
+
+    private void performParsePSSList(long startTime, long endTime) {
+        ArrayList<PSS> psses = mAlogEventParser.getPSS(startTime, endTime);
+        if(null == psses || 0 == psses.size()) {
+            mPSSTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+            return;
+        }
+        // TODO: Statistics Information?
+        //sortPSS(psses, 0, psses.size()-1);
+        sortPSS(psses);
+        String[] title = {Const.Panel.TIME, Const.Panel.PACKAGE_NAME, Const.Panel.PID, Const.Panel.UID, Const.Panel.PSS, Const.Panel.USS, Const.Panel.SWAP_PSS};
+        String[][] items = new String[psses.size()][title.length];
+        for (int i = 0; i < psses.size(); i++) {
+            items[i][0] = format.format(psses.get(i).getTime());
+            items[i][1] = psses.get(i).getPackageName();
+            items[i][2] = psses.get(i).getPID().toString();
+            items[i][3] = psses.get(i).getUID().toString();
+            items[i][4] = psses.get(i).getPSS().toString();
+            items[i][5] = psses.get(i).getUSS().toString();
+            items[i][6] = psses.get(i).getSwapPSS().toString();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(title, items);
+        mPSSTable.setModel(appTM);
+    }
+    
+    private void performParseLaunchTimeList(long startTime, long endTime) {
+        ArrayList<ActivityLaunchTime> launches = mAlogEventParser.getActivityLaunchTime(startTime, endTime);
+        if(null == launches || 0 == launches.size()) {
+            mLaunchTimeTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+            return;
+        }
+        String[] title = {Const.Panel.TIME, Const.Panel.COMPONENT_NAME, Const.Panel.TOKEN, Const.Panel.CURRENT_LAUNCH_TIME, Const.Panel.TOTAL_LAUNCH_TIME, Const.Panel.USER};
+        String[][] items = new String[launches.size()][title.length];
+        for(int i = 0; i < launches.size(); i++) {
+            items[i][0] = format.format(launches.get(i).getTime());
+            items[i][1] = launches.get(i).getComponentName().toString();
+            items[i][2] = launches.get(i).getToken().toString();
+            items[i][3] = launches.get(i).getThisTime().toString();
+            items[i][4] = launches.get(i).getTotalTime().toString();
+            items[i][5] = launches.get(i).getUser().toString();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(title, items);
+        mLaunchTimeTable.setModel(appTM);
+    }
+    
+    private void performParseANR(long startTime, long endTime) {
+        ArrayList<ANR> anrs = mAlogEventParser.getANR(startTime, endTime);
+        if(null == anrs || 0 == anrs.size()) {
+            return;
+        }
+        result.append("ANR Count: " + anrs.size() + "\n\n");
+    }
+    
+    private void performParseCrash(long startTime, long endTime) {
+        ArrayList<Crash> crashes = mAlogEventParser.getCrash(startTime, endTime);
+        if(null == crashes || 0 == crashes.size()) {
+            return;
+        }
+        result.append("Crash Count: " + crashes.size() + "\n\n");
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

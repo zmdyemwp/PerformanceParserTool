@@ -204,7 +204,7 @@ public class AlogEventParser {
         }
     }
 
-    void parseLine(String line) {
+    void parseLine(String line) throws Exception {
         String tag = getTagFromLine(line);
         switch(tag) {
         case ProcStart.TAG:
@@ -565,7 +565,7 @@ public class AlogEventParser {
         return getBaseEvent(sMemInfo, starttime, endtime);
     }
 
-    public class PSS extends BaseEvent {
+    public class PSS extends BaseEvent implements Comparable<PSS> {
         public final static String TAG = "am_pss";
         PSS(String line) {
             super(line);
@@ -629,6 +629,17 @@ public class AlogEventParser {
         public String toString() {
             return super.toString() + String.format(",%d,%d,%s,%d,%d,%d",
                     pid, uid, package_name, pss, uss, swappss);
+        }
+        @Override
+        public int compareTo(PSS o) {
+            // TODO Auto-generated method stub
+            if(o.pss > this.pss) {
+                return -1;
+            }
+            if(o.pss < pss) {
+                return 1;
+            }
+            return 0;
         }
     }
     private static ArrayList<PSS> sPSS = new ArrayList<PSS>();
@@ -695,7 +706,7 @@ public class AlogEventParser {
         }
     }
     private static ArrayList<ANR> sANR = new ArrayList<ANR>();
-    ArrayList<ANR> getANR(long starttime, long endtime) {
+    public ArrayList<ANR> getANR(long starttime, long endtime) {
         return getBaseEvent(sANR, starttime, endtime);
     }
 
@@ -785,7 +796,7 @@ public class AlogEventParser {
         }
     }
     private static ArrayList<Crash> sCrash = new ArrayList<Crash>();
-    ArrayList<Crash> getCrash(long starttime, long endtime) {
+    public ArrayList<Crash> getCrash(long starttime, long endtime) {
         return getBaseEvent(sCrash, starttime, endtime);
     }
 
@@ -895,10 +906,14 @@ public class AlogEventParser {
 
     public class ProcStart extends BaseEvent {
         public final static String TAG = "am_proc_start";
-        ProcStart(String line) {
+        ProcStart(String line) throws Exception {
             super(line);
             String subline = line.substring(line.indexOf('[')+1, line.indexOf(']'));
             String[] params = subline.split(",");
+            if(params.length < 6) {
+                debugmsg(line);
+                throw new Exception();
+            }
             user = Integer.parseInt(params[0]);
             pid = Integer.parseInt(params[1]);
             uid = Integer.parseInt(params[2]);
