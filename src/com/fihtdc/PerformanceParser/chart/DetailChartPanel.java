@@ -420,38 +420,6 @@ public class DetailChartPanel {
             }
         }
     }
-    private void sortPSS(ArrayList<PSS> list, int start, int end) {
-        PSS temp;
-        // check start and end valid
-        if(0 <= start && start < end && end < list.size()) {
-            //  Select end as pivot
-            int left = start;
-            int right = end - 1;
-            while(left < right) {
-                //debugmsg(String.format("[left, right] = [%d, %d]", left, right));
-                while(left < right && list.get(left).compareTo(list.get(end)) < 0) {
-                    left++;
-                }
-                while(left < right && list.get(right).compareTo(list.get(end)) >= 0) {
-                    right--;
-                }
-                if(left < right) {
-                    temp = list.get(left);
-                    list.set(left, list.get(right));
-                    list.set(right, temp);
-                }
-            }
-            if(list.get(right).compareTo(list.get(end)) >= 0) {
-                temp = list.get(right);
-                list.set(right, list.get(end));
-                list.set(end, temp);
-                sortPSS(list, start, right-1);
-                sortPSS(list, right+1, end);
-            } else {
-                sortPSS(list, start, end-1);
-            }
-        }
-    }
     /*
     private ArrayList<PSS> sortPSS(ArrayList<PSS> list) {
         ArrayList<PSS> less = new ArrayList<PSS>();

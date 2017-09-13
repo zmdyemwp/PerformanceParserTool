@@ -31,6 +31,8 @@ import java.util.ArrayList;
  *     <li><b>am_activity_launch_time</b>    (see {@link ActivityLaunchTime})</li>
  *     <li><b>am_schedule_service_restart</b>    (see {@link ScheduleServiceRestart})</li>
  *     <li><b>am_focused_activity</b>    (see {@link ActivityFocused})</li>
+ *     <li><b>screen_toggled</b>    (see {@link ScreenToggled})</li>
+ *     <li><b>binder_sample</b>    (see {@link BinderSample})</li>
  * </ul>
  * <br>
  * <br>
@@ -262,6 +264,12 @@ public class AlogEventParser {
                     sTop.add(new Top(line));
                 }
             }
+            break;
+        case ScreenToggled.TAG:
+            sScreenToggled.add(new ScreenToggled(line));
+            break;
+        case BinderSample.TAG:
+            sBinderSample.add(new BinderSample(line));
             break;
         default:
             //debugmsg("TAG NOT FOUND: " + tag);
@@ -1250,6 +1258,71 @@ public class AlogEventParser {
     }
 
 
+    public class ScreenToggled extends BaseEvent {
+        public static final String TAG = "screen_toggled";
+        ScreenToggled(String line) {
+            super(line);
+            String values = getEventValues(line);
+            String[] params = values.split(",");
+            onoff = Integer.parseInt(params[0]);
+        }
+        Integer onoff;
+        public Integer getScreenOnOff() {
+            return onoff;
+        }
+        public String toString() {
+            return super.toString() + String.format("%d", onoff);
+        }
+    }
+    private static ArrayList<ScreenToggled> sScreenToggled = new ArrayList<ScreenToggled>();
+    public ArrayList<ScreenToggled> getScreenToggled(long startTime, long endTime) {
+        return getBaseEvent(sScreenToggled, startTime, endTime);
+    }
+
+
+    public class BinderSample extends BaseEvent {
+        public static final String TAG = "binder_sample";
+        BinderSample(String line) {
+            super(line);
+            String values = getEventValues(line);
+            String[] params = values.split(",");
+            descriptor = params[0];
+            method_num = Integer.parseInt(params[1]);
+            duration_ms = Integer.parseInt(params[2]);
+            block_package = params[3];
+            /* sample_percent = 100 * duration_ms / 500; */
+            sample_percent = Integer.parseInt(params[4]);
+        }
+        String descriptor;
+        Integer method_num;
+        Integer duration_ms;
+        String block_package;
+        Integer sample_percent;
+        public String getDescriptor() {
+            return descriptor;
+        }
+        public Integer getMethodNumber() {
+            return method_num;
+        }
+        public Integer getDuration() {
+            return duration_ms;
+        }
+        public String getBlockPackage() {
+            return block_package;
+        }
+        public Integer getSamplePercent() {
+            return sample_percent;
+        }
+        public String toString() {
+            return super.toString() +
+                    String.format("%s,%d,%d,%s,%d",
+                            descriptor, method_num, duration_ms, block_package, sample_percent);
+        }
+    }
+    private static ArrayList<BinderSample> sBinderSample = new ArrayList<BinderSample>();
+    public ArrayList<BinderSample> getBinderSample(long startTime, long endTime) {
+        return getBaseEvent(sBinderSample, startTime, endTime);
+    }
 
 
     /**
@@ -1327,6 +1400,10 @@ public class AlogEventParser {
         showBaseEventArrayContent(sActivityFocused);
         debugmsg("[sTop]");
         showBaseEventArrayContent(sTop);
+        debugmsg("[sScreenToggled]");
+        showBaseEventArrayContent(sScreenToggled);
+        debugmsg("[sBinderSample]");
+        showBaseEventArrayContent(sBinderSample);
     }
 
 
