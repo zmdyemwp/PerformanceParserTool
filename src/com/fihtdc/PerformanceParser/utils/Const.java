@@ -12,7 +12,7 @@ public final class Const {
 
     
     public static final class Version {
-        public static final String NUMBER = "v1.0.0";
+        public static final String NUMBER = "v1.0.1";
     }
     
     public static final class PathName {
