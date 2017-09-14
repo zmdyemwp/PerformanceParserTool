@@ -21,11 +21,13 @@ import com.fihtdc.PerformanceParser.dataparser.AlogEventParser;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ANR;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityLaunchTime;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.BinderSample;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Crash;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.PSS;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ScreenToggled;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Top;
 import com.fihtdc.PerformanceParser.utils.Const;
 
@@ -40,6 +42,9 @@ public class DetailChartPanel {
     private JPanel mPSSPanel;
     private JPanel mLaunchTimePanel;
 
+    private JPanel mScreenToggledPanel;
+    private JPanel mBinderSamplePanel;
+
     private JTable mCPUTopTable;
     private JTable mProcStartTable;
     private JTable mFocusedTable;
@@ -47,6 +52,9 @@ public class DetailChartPanel {
     private JTable mKillTable;
     private JTable mPSSTable;
     private JTable mLaunchTimeTable;
+
+    private JTable mScreenToggledTable;
+    private JTable mBinderSampleTable;
 
     private JTextArea mDetailInfo;
     private JTabbedPane mTabPane;
@@ -92,6 +100,9 @@ public class DetailChartPanel {
         mPSSPanel = new JPanel(new BorderLayout());
         mLaunchTimePanel = new JPanel(new BorderLayout());
 
+        mScreenToggledPanel = new JPanel(new BorderLayout());
+        mBinderSamplePanel = new JPanel(new BorderLayout());
+
         mCPUTopTable = new JTable();
         mProcStartTable = new JTable();
         mFocusedTable = new JTable();
@@ -99,6 +110,9 @@ public class DetailChartPanel {
         mKillTable = new JTable();
         mPSSTable = new JTable();
         mLaunchTimeTable = new JTable();
+
+        mScreenToggledTable = new JTable();
+        mBinderSampleTable = new JTable();
 
         mCPUTopPanel.add(new JScrollPane(mCPUTopTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mProcStartPanel.add(new JScrollPane(mProcStartTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
@@ -108,6 +122,10 @@ public class DetailChartPanel {
         mPSSPanel.add(new JScrollPane(mPSSTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mLaunchTimePanel.add(new JScrollPane(mLaunchTimeTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
 
+        mScreenToggledPanel.add(new JScrollPane(mScreenToggledTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        mBinderSamplePanel.add(new JScrollPane(mBinderSampleTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+
+
         mTabPane.addTab(Const.Panel.CPU_TOP_INFO, mCPUTopPanel);
         mTabPane.addTab(Const.Panel.PROC_START_INFO, mProcStartPanel);
         mTabPane.addTab(Const.Panel.FOCUSED_INFO, mFocusedPanel);
@@ -115,6 +133,9 @@ public class DetailChartPanel {
         mTabPane.addTab(Const.Panel.KILL_INFO, mKillPanel);
         mTabPane.addTab(Const.Panel.PSS_INFO, mPSSPanel);
         mTabPane.addTab(Const.Panel.LAUNCHTIME_INFO, mLaunchTimePanel);
+
+        mTabPane.addTab(Const.Panel.SCREEN_TOGGLED_INFO, mScreenToggledPanel);
+        mTabPane.addTab(Const.Panel.BINDER_SAMPLE_INFO, mBinderSamplePanel);
 
         mJPanel.add(mTabPane);
 
@@ -147,6 +168,8 @@ public class DetailChartPanel {
         mKillTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mPSSTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mLaunchTimeTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        mScreenToggledTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        mBinderSampleTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
     }
 
     public JPanel getJPanel() {
@@ -171,6 +194,9 @@ public class DetailChartPanel {
         performParseLaunchTimeList(startTime, endTime);
         performParseANR(startTime, endTime);
         performParseCrash(startTime, endTime);
+
+        performParseScreenToggled(startTime, endTime);
+        performParseBinderSample(startTime, endTime);
 
         mDetailInfo.setText(result.toString());
     }
@@ -466,7 +492,7 @@ public class DetailChartPanel {
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
         mPSSTable.setModel(appTM);
     }
-    
+
     private void performParseLaunchTimeList(long startTime, long endTime) {
         ArrayList<ActivityLaunchTime> launches = mAlogEventParser.getActivityLaunchTime(startTime, endTime);
         if(null == launches || 0 == launches.size()) {
@@ -486,7 +512,7 @@ public class DetailChartPanel {
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
         mLaunchTimeTable.setModel(appTM);
     }
-    
+
     private void performParseANR(long startTime, long endTime) {
         ArrayList<ANR> anrs = mAlogEventParser.getANR(startTime, endTime);
         if(null == anrs || 0 == anrs.size()) {
@@ -494,7 +520,7 @@ public class DetailChartPanel {
         }
         result.append("ANR Count: " + anrs.size() + "\n\n");
     }
-    
+
     private void performParseCrash(long startTime, long endTime) {
         ArrayList<Crash> crashes = mAlogEventParser.getCrash(startTime, endTime);
         if(null == crashes || 0 == crashes.size()) {
@@ -502,17 +528,42 @@ public class DetailChartPanel {
         }
         result.append("Crash Count: " + crashes.size() + "\n\n");
     }
+
+    private void performParseScreenToggled(long startTime, long endTime) {
+        ArrayList<ScreenToggled> screen = mAlogEventParser.getScreenToggled(startTime, endTime);
+        if(null == screen || 0 == screen.size()) {
+            mScreenToggledTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+            return;
+        }
+        String[] title = {Const.Panel.TIME, Const.Panel.SCREEN_STATE};
+        String[][] items = new String[screen.size()][title.length];
+        for(int i = 0; i < screen.size(); i++) {
+            items[i][0] = format.format(screen.get(i).getTime());
+            items[i][1] = screen.get(i).getScreenOnOff().toString();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(title, items);
+        mScreenToggledTable.setModel(appTM);
+    }
+
+    private void performParseBinderSample(long startTime, long endTime) {
+        ArrayList<BinderSample> bind = mAlogEventParser.getBinderSample(startTime, endTime);
+        if(null == bind || 0 == bind.size()) {
+            mBinderSampleTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+            return;
+        }
+        String[] title = {Const.Panel.TIME, Const.Panel.DESCRIPTOR, Const.Panel.METHOD_NUM, Const.Panel.BLCK_PACKAGE, Const.Panel.DURATION, Const.Panel.SAMPLE_PERCENT};
+        String[][] items = new String[bind.size()][title.length];
+        for(int i = 0; i < bind.size(); i++) {
+            items[i][0] = format.format(bind.get(i).getTime());
+            items[i][1] = bind.get(i).getDescriptor();
+            items[i][2] = bind.get(i).getMethodNumber().toString();
+            items[i][3] = bind.get(i).getBlockPackage();
+            items[i][4] = bind.get(i).getDuration().toString();
+            items[i][5] = bind.get(i).getSamplePercent().toString();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(title, items);
+        mBinderSampleTable.setModel(appTM);
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 

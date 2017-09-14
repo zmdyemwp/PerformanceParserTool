@@ -1,19 +1,16 @@
 package com.fihtdc.PerformanceParser.chart;
 
 import java.awt.Color;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.jfree.chart.title.Title;
-import org.jfree.util.Log;
 
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ScreenToggled;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Top;
 import com.fihtdc.PerformanceParser.utils.Const;
 
@@ -45,7 +42,11 @@ public class XYMultiDataSet {
                     Const.LineStyle.SOLID, Const.LineSeat.SUB),
             /* proc died on line element */
             new DataSetElement(Const.LineTitles.PROC_DIED, Const.PPColors.TASK_PROC_DIED,
-                    Const.LineStyle.SOLID, Const.LineSeat.SUB)
+                    Const.LineStyle.SOLID, Const.LineSeat.SUB),
+
+            /* Screen Toggled State */
+            new DataSetElement(Const.LineTitles.SCREEN_TOGGLED, Const.PPColors.SCREEN_TOGGLED,
+                    Const.LineStyle.SOLID, Const.LineSeat.MAIN)
         };
     }
 
@@ -69,6 +70,16 @@ public class XYMultiDataSet {
                     }
 
                     break;
+
+                case Const.LineTitles.SCREEN_TOGGLED:
+                    ArrayList<ScreenToggled> screens = mAlogEventParser.getScreenToggled(Long.MIN_VALUE, Long.MAX_VALUE);
+                    for(int j = 0; j < screens.size(); j++) {
+                        xyDataSet.add(screens.get(j).getTime(), new Integer[] {screens.get(j).getScreenOnOff()});
+                    }
+                    System.out.println("Screen Toggled #:" + screens.size() + ":" + xyDataSet.getArrayItemCount());
+                    break;
+
+
                 case Const.LineTitles.FOCUSED:
                     ArrayList<ActivityFocused> focuseds = 
                         mAlogEventParser.getActivityFocused(Long.MIN_VALUE, Long.MAX_VALUE);
@@ -112,9 +123,14 @@ public class XYMultiDataSet {
             }
             
             mXYMultiDataSet.add(xyDataSet);
+            debugmsg(String.format("[%s](%d) => %d", xyDataSet.getTitle(), xyDataSet.getItemCount() ,mXYMultiDataSet.size()));
         }
     }
 
+    static void debugmsg(String str) {
+        System.out.println(str);
+    }
+    
     public List<XYDataSet> getXYMultiDataSet() {
         return this.mXYMultiDataSet;
     }

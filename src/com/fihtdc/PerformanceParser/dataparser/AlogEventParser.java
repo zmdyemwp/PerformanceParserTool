@@ -74,6 +74,8 @@ public class AlogEventParser {
         if(null != sScheduleServiceRestart) sScheduleServiceRestart.clear();
         if(null != sActivityFocused) sActivityFocused.clear();
         if(null != sTop) sTop.clear();
+        if(null != sScreenToggled) sScreenToggled.clear();
+        if(null != sBinderSample) sBinderSample.clear();
     }
 
 
@@ -1260,11 +1262,13 @@ public class AlogEventParser {
 
     public class ScreenToggled extends BaseEvent {
         public static final String TAG = "screen_toggled";
+        private static final String xTAG = "screen_toggled:";
         ScreenToggled(String line) {
             super(line);
-            String values = getEventValues(line);
-            String[] params = values.split(",");
-            onoff = Integer.parseInt(params[0]);
+            //String values = getEventValues(line);
+            //String[] params = values.split(",");
+            debugmsg(line);
+            onoff = Integer.parseInt(line.substring(line.indexOf(xTAG) + xTAG.length()).trim());
         }
         Integer onoff;
         public Integer getScreenOnOff() {
@@ -1367,6 +1371,7 @@ public class AlogEventParser {
             debugmsg(getFields(list.get(index)));
         }
     }
+
     /**
      * The method to print the first, middle and the last events of each tag
      * This method is used for debugging
@@ -1405,8 +1410,6 @@ public class AlogEventParser {
         debugmsg("[sBinderSample]");
         showBaseEventArrayContent(sBinderSample);
     }
-
-
 
 
 }
