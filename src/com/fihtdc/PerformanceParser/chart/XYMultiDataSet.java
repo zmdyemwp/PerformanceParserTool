@@ -12,6 +12,7 @@ import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ScreenToggled;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Top;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.MemInfo;
 import com.fihtdc.PerformanceParser.utils.Const;
 
 public class XYMultiDataSet {
@@ -46,7 +47,11 @@ public class XYMultiDataSet {
 
             /* Screen Toggled State */
             new DataSetElement(Const.LineTitles.SCREEN_TOGGLED, Const.PPColors.SCREEN_TOGGLED,
-                    Const.LineStyle.SOLID, Const.LineSeat.MAIN)
+                    Const.LineStyle.SOLID, Const.LineSeat.MAIN),
+
+            /* Memory Information */
+            new DataSetElement(Const.LineTitles.MEMINFO, Const.PPColors.LINE_MEM_INFO,
+                    Const.LineStyle.SOLID, Const.LineSeat.MAIN),
         };
     }
 
@@ -59,7 +64,6 @@ public class XYMultiDataSet {
             switch(mDataSetElement[i].getTitke()) {
                 case Const.LineTitles.CPU_TOP:
                     ArrayList<Top> tops = mAlogEventParser.getTop(Long.MIN_VALUE, Long.MAX_VALUE);
-                    
                     for(int j = 0; j < tops.size(); j++) {
                         Integer[] arrayY = new Integer[4];
                         arrayY[0] = tops.get(j).getIRQ();
@@ -68,8 +72,22 @@ public class XYMultiDataSet {
                         arrayY[3] = tops.get(j).getUserUsage();
                         xyDataSet.add(tops.get(j).getTime(), arrayY);
                     }
-
                     break;
+
+                case Const.LineTitles.MEMINFO:
+                    ArrayList<MemInfo> meminfo = mAlogEventParser.getMemInfo(Long.MIN_VALUE, Long.MAX_VALUE);
+                    for(int j = 0; j < meminfo.size(); j++) {
+                        Integer[] arrayY = new Integer[5];
+                        int MB = 1024 * 1024;
+                        arrayY[0] = meminfo.get(j).getZramSize() / MB;
+                        arrayY[1] = meminfo.get(j).getKernelSize() / MB;
+                        arrayY[2] = meminfo.get(j).getNativeSize() / MB;
+                        arrayY[3] = meminfo.get(j).getCachedSize() / MB;
+                        arrayY[4] = meminfo.get(j).getFreeSize() / MB;
+                        xyDataSet.add(meminfo.get(j).getTime(), arrayY);
+                    }
+                    break;
+
 
                 case Const.LineTitles.SCREEN_TOGGLED:
                     ArrayList<ScreenToggled> screens = mAlogEventParser.getScreenToggled(Long.MIN_VALUE, Long.MAX_VALUE);

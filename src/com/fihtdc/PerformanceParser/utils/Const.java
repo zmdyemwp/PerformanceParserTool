@@ -67,6 +67,11 @@ public final class Const {
         public static final String SAMPLE_PERCENT = "Sample Percent";
         public static final String SCREEN_STATE = "Screen State";
         
+        public static final String OOM_ADJ = "OOM Adj";
+        public static final String PROC_STATE = "Proc State";
+        
+        public static final String FRAME_DROP = "Frame Drop";
+        
         public static final String COMPONENT_NAME = "Component name";
         public static final String REASON = "Reason";
         
@@ -131,6 +136,7 @@ public final class Const {
         public static final Color TASK_FOCUSED = new Color(140, 196, 82);
         public static final Color TASK_PROC_DIED = new Color(252, 180, 65);
         public static final Color SCREEN_TOGGLED = new Color(255, 255, 255);
+        public static final Color LINE_MEM_INFO = new Color(200, 200, 100);
     }
     
     public static final class LineTitles {
@@ -144,6 +150,12 @@ public final class Const {
         public static final String PROC_DIED = "proc_died & am_kied";
         public static final String AM_KILL = "am_kied";
         public static final String SCREEN_TOGGLED = "screen_toggled";
+        public static final String MEMINFO = "memory_info";
+        public static final String MEMINFO_ZRAM = "zram";
+        public static final String MEMINFO_KERNEL = "kernel";
+        public static final String MEMINFO_NATIVE = "native";
+        public static final String MEMINFO_CACHED = "cached";
+        public static final String MEMINFO_FREE = "free";
     }
 
     public static final class Symbols {

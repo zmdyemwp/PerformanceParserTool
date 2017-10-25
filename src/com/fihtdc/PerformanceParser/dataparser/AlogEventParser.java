@@ -33,6 +33,7 @@ import java.util.ArrayList;
  *     <li><b>am_focused_activity</b>    (see {@link ActivityFocused})</li>
  *     <li><b>screen_toggled</b>    (see {@link ScreenToggled})</li>
  *     <li><b>binder_sample</b>    (see {@link BinderSample})</li>
+ *     <li><b>choreographer_skip_frames</b>    (see {@link FrameDrop})</li>
  * </ul>
  * <br>
  * <br>
@@ -272,6 +273,9 @@ public class AlogEventParser {
             break;
         case BinderSample.TAG:
             sBinderSample.add(new BinderSample(line));
+            break;
+        case FrameDrop.TAG:
+            sFrameDrop.add(new FrameDrop(line));
             break;
         default:
             //debugmsg("TAG NOT FOUND: " + tag);
@@ -819,10 +823,14 @@ public class AlogEventParser {
             user = Integer.parseInt(params[0]);
             pid = Integer.parseInt(params[1]);
             process_name = params[2];
+            if(3 < params.length) oom_adj = Integer.parseInt(params[3]);
+            if(4 < params.length) proc_state = Integer.parseInt(params[4]);
         }
         Integer user;
         Integer pid;
         String process_name;
+        Integer oom_adj;
+        Integer proc_state;
         /**
          * The method to get User
          * @return User
@@ -844,8 +852,17 @@ public class AlogEventParser {
         public String getProcessName() {
             return process_name;
         }
+        
+        public Integer getOomAdj() {
+            return oom_adj;
+        }
+        
+        public Integer getProcState() {
+            return proc_state;
+        }
+        
         public String toString() {
-            return super.toString() + String.format(",%d,%d,%s", user, pid, process_name);
+            return super.toString() + String.format(",%d,%d,%s,%d,%d", user, pid, process_name, oom_adj, proc_state);
         }
     }
     private static ArrayList<ProcDied> sProcDied = new ArrayList<ProcDied>();
@@ -1329,6 +1346,30 @@ public class AlogEventParser {
     }
 
 
+    public class FrameDrop extends BaseEvent {
+        public static final String TAG = "choreographer_skip_frames";
+        FrameDrop(String line) {
+            super(line);
+            int index = line.indexOf("choreographer_skip_frames");
+            if(-1 == index) {
+                frame_drop = 0;
+            } else {
+                debugmsg(line);
+                String value = line.substring(line.indexOf(":", index) + 1).trim();
+                frame_drop = Integer.parseInt(value);
+            }
+        }
+        public Integer getFrameDrop() {
+            return frame_drop;
+        }
+        Integer frame_drop;
+    }
+    private static ArrayList<FrameDrop> sFrameDrop = new ArrayList<FrameDrop>();
+    public ArrayList<FrameDrop> getFrameDrop(long startTime, long endTime) {
+        return getBaseEvent(sFrameDrop, startTime, endTime);
+    }
+
+
     /**
      * Print the first, the middle, and the last am_proc_start event for debugging
      * @param obj BaseEvent object, 
@@ -1409,6 +1450,8 @@ public class AlogEventParser {
         showBaseEventArrayContent(sScreenToggled);
         debugmsg("[sBinderSample]");
         showBaseEventArrayContent(sBinderSample);
+        debugmsg("[sFrameDrop]");
+        showBaseEventArrayContent(sFrameDrop);
     }
 
 

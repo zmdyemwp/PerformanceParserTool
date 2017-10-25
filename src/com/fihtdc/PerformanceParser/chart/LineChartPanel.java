@@ -110,7 +110,7 @@ public class LineChartPanel {
         // draw line chart
         XYPlot mainXYPlot = drawLineChart(topXYDataset);
 
-        // status usage bar
+        // status usage bar (Task Series)
         IntervalXYDataset intervalXYDataset = setTntervalXYDataset();
         // draw status usage chart
         XYPlot stackedXYPlot = drawStackedChart(intervalXYDataset);
@@ -120,6 +120,9 @@ public class LineChartPanel {
         //  TODO: Draw Screen Toggled State
         //XYPlot screenToggledPlot = drawScreenToggled();
         /* END SCREEN_TOGGLED */
+        /* Memory Information - MinSMChien - This will add a new char */
+        XYPlot memInfoPlot = drawMemInfo();
+        /* End Memory Information */
 
 
         multiXYPlot.setDomainAxis(mDateAxis);
@@ -130,6 +133,9 @@ public class LineChartPanel {
         /* SCREEN_TOGGLED MinSMChien - Add Screen Toggled Plot */
         //multiXYPlot.add(screenToggledPlot, MAIN_PLOT_SCALE);
         /* END SCREEN_TOGGLED */
+        /* Memory Information - MinSMChien - This will add a new char */
+        multiXYPlot.add(memInfoPlot, MAIN_PLOT_SCALE);
+        /* End Memory Information */
         multiXYPlot.setGap(1d);
 
         JFreeChart mJFreeChart = new JFreeChart(multiXYPlot);
@@ -168,8 +174,7 @@ public class LineChartPanel {
         }
         return mTimeTableXYDataset;
     }
-    
-    
+
 
     private void debugmsg(String str) {
         System.out.println(str);
@@ -238,6 +243,58 @@ public class LineChartPanel {
     */
     /* END SCREEN_TOGGLED */
 
+    /* Memory Information - MinSMChien */
+    public XYPlot drawMemInfo() {
+        XYPlot mXYPlot = new XYPlot();
+        int YAxisCount = 0;
+        
+        TimeTableXYDataset memInfoXYDataset = new TimeTableXYDataset();
+        try {
+            for (XYDataSet mXYDataSet:mXYMultiDataSet) {
+                if (mXYDataSet.getSeat().equals(Const.LineSeat.MAIN) && mXYDataSet.getTitle().equals(Const.LineTitles.MEMINFO)) {
+                    for( int i = 0; i < mXYDataSet.getArrayItemCount(); i++) {
+                        Date dataTime = new Date(((long) mXYDataSet.getArrayX(i)));
+                        memInfoXYDataset.add(new Millisecond(dataTime),
+                                mXYDataSet.getArrayY(i).get(0), Const.LineTitles.MEMINFO_ZRAM);
+                        memInfoXYDataset.add(new Millisecond(dataTime),
+                                mXYDataSet.getArrayY(i).get(1), Const.LineTitles.MEMINFO_KERNEL);
+                        memInfoXYDataset.add(new Millisecond(dataTime),
+                                mXYDataSet.getArrayY(i).get(2), Const.LineTitles.MEMINFO_NATIVE);
+                        memInfoXYDataset.add(new Millisecond(dataTime),
+                                mXYDataSet.getArrayY(i).get(3), Const.LineTitles.MEMINFO_CACHED);
+                        memInfoXYDataset.add(new Millisecond(dataTime),
+                                mXYDataSet.getArrayY(i).get(4), Const.LineTitles.MEMINFO_FREE);
+                    }
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+
+        StackedXYAreaRenderer2 memInfoRenderer = new StackedXYAreaRenderer2(new StandardXYToolTipGenerator(), null);
+        memInfoRenderer.setOutline(true);
+        memInfoRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
+        memInfoRenderer.setBaseItemLabelsVisible(true);
+        memInfoRenderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
+        
+
+        NumberAxis memInfoAxis = new NumberAxis();
+        memInfoAxis.setAutoRange(true);
+        memInfoAxis.setAutoRangeIncludesZero(true);
+
+        mXYPlot.setDataset(YAxisCount, memInfoXYDataset);
+        mXYPlot.setRenderer(YAxisCount, memInfoRenderer);
+        mXYPlot.setRangeAxis(YAxisCount, memInfoAxis);
+        mXYPlot.setDomainGridlinesVisible(true);
+        mXYPlot.setDomainMinorGridlinesVisible(true);
+        mXYPlot.setBackgroundPaint(Color.BLACK);
+        mXYPlot.setRangeGridlinePaint(Color.lightGray);
+        mXYPlot.setDomainGridlinePaint(Color.lightGray);
+        mXYPlot.mapDatasetToRangeAxis(YAxisCount, YAxisCount);
+        
+        return mXYPlot;
+    }
+
 
 
     public XYPlot drawLineChart(TableXYDataset topXYDataset) {
@@ -245,36 +302,37 @@ public class LineChartPanel {
         int YAxisCount = 0;
 
 
-        TableXYDataset screenDataset = setScreenXYDataset();
-        XYStepRenderer screenXYStepRenderer = new XYStepRenderer();
-        screenXYStepRenderer.setSeriesStroke(0, new BasicStroke(2.0F));
-        //screenXYStepRenderer.setSeriesStroke(1, new BasicStroke(2.0F));
-        screenXYStepRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
-        screenXYStepRenderer.setDefaultEntityRadius(6);
-        screenXYStepRenderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
-        screenXYStepRenderer.setBaseItemLabelsVisible(true);
-        screenXYStepRenderer.setBaseItemLabelFont(new Font("Dialog", 1, 14));
-        //screenXYStepRenderer.setBaseItemLabelPaint(paint);
-        NumberAxis screenAxis = new NumberAxis();
-        screenAxis.setAutoRange(true);
-        screenAxis.setAutoRangeIncludesZero(true);
-        screenAxis.setTickUnit(new NumberTickUnit(1));
-        //screenAxis.setRange(-0.1, 5.0);
+        /* Screen Toggled Line Chart */
+            TableXYDataset screenDataset = setScreenXYDataset();
+            XYStepRenderer screenXYStepRenderer = new XYStepRenderer();
+            screenXYStepRenderer.setSeriesStroke(0, new BasicStroke(2.0F));
+            //screenXYStepRenderer.setSeriesStroke(1, new BasicStroke(2.0F));
+            screenXYStepRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
+            screenXYStepRenderer.setDefaultEntityRadius(6);
+            screenXYStepRenderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
+            screenXYStepRenderer.setBaseItemLabelsVisible(true);
+            screenXYStepRenderer.setBaseItemLabelFont(new Font("Dialog", 1, 14));
+            //screenXYStepRenderer.setBaseItemLabelPaint(paint);
+            NumberAxis screenAxis = new NumberAxis();
+            screenAxis.setAutoRange(true);
+            screenAxis.setAutoRangeIncludesZero(true);
+            screenAxis.setTickUnit(new NumberTickUnit(1));
+            //screenAxis.setRange(-0.1, 5.0);
 
-        mXYPlot.setDataset(YAxisCount, screenDataset);
-        mXYPlot.setRenderer(YAxisCount, screenXYStepRenderer);
-        mXYPlot.setRangeAxis(YAxisCount, screenAxis);
-        mXYPlot.mapDatasetToRangeAxis(YAxisCount, YAxisCount);
-        
+            mXYPlot.setDataset(YAxisCount, screenDataset);
+            mXYPlot.setRenderer(YAxisCount, screenXYStepRenderer);
+            mXYPlot.setRangeAxis(YAxisCount, screenAxis);
+            mXYPlot.mapDatasetToRangeAxis(YAxisCount, YAxisCount);
+            mXYPlot.setDomainGridlinesVisible(true);
+            mXYPlot.setDomainMinorGridlinesVisible(true);
+            mXYPlot.setBackgroundPaint(Color.BLACK);
+            mXYPlot.setRangeGridlinePaint(Color.lightGray);
+            mXYPlot.setDomainGridlinePaint(Color.lightGray);
+            mXYPlot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+            mXYPlot.setAxisOffset(new RectangleInsets(0, 5d, 0, 5d));
+            mXYPlot.setDomainCrosshairVisible(true);
+        /* End Screen Toggled */
 
-        mXYPlot.setDomainGridlinesVisible(true);
-        mXYPlot.setDomainMinorGridlinesVisible(true);
-        mXYPlot.setBackgroundPaint(Color.BLACK);
-        mXYPlot.setRangeGridlinePaint(Color.lightGray);
-        mXYPlot.setDomainGridlinePaint(Color.lightGray);
-        mXYPlot.setRangeAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
-        mXYPlot.setAxisOffset(new RectangleInsets(0, 5d, 0, 5d));
-        mXYPlot.setDomainCrosshairVisible(true);
 
         YAxisCount++;
 
@@ -324,7 +382,7 @@ public class LineChartPanel {
                             Task task = new Task("", new SimpleTimePeriod(start, end));
                             mTaskSeries.add(task);
                         } else {
-                            long itemTime = (long) mXYDataSet.getX(i);                            
+                            long itemTime = (long) mXYDataSet.getX(i);
                             if(i == 0) {
                                 /*
                                 if(start < itemTime) {

@@ -23,6 +23,7 @@ import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityLaunchTime;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.BinderSample;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Crash;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.FrameDrop;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.PSS;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
@@ -44,6 +45,8 @@ public class DetailChartPanel {
 
     private JPanel mScreenToggledPanel;
     private JPanel mBinderSamplePanel;
+    
+    private JPanel mFrameDropPanel;
 
     private JTable mCPUTopTable;
     private JTable mProcStartTable;
@@ -55,6 +58,8 @@ public class DetailChartPanel {
 
     private JTable mScreenToggledTable;
     private JTable mBinderSampleTable;
+    
+    private JTable mFrameDropTable;
 
     private JTextArea mDetailInfo;
     private JTabbedPane mTabPane;
@@ -103,6 +108,11 @@ public class DetailChartPanel {
         mScreenToggledPanel = new JPanel(new BorderLayout());
         mBinderSamplePanel = new JPanel(new BorderLayout());
 
+        mFrameDropPanel = new JPanel(new BorderLayout());
+
+
+
+
         mCPUTopTable = new JTable();
         mProcStartTable = new JTable();
         mFocusedTable = new JTable();
@@ -113,6 +123,10 @@ public class DetailChartPanel {
 
         mScreenToggledTable = new JTable();
         mBinderSampleTable = new JTable();
+
+        mFrameDropTable = new JTable();
+
+
 
         mCPUTopPanel.add(new JScrollPane(mCPUTopTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mProcStartPanel.add(new JScrollPane(mProcStartTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
@@ -125,6 +139,8 @@ public class DetailChartPanel {
         mScreenToggledPanel.add(new JScrollPane(mScreenToggledTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mBinderSamplePanel.add(new JScrollPane(mBinderSampleTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
 
+        mFrameDropPanel.add(new JScrollPane(mFrameDropTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+
 
         mTabPane.addTab(Const.Panel.CPU_TOP_INFO, mCPUTopPanel);
         mTabPane.addTab(Const.Panel.PROC_START_INFO, mProcStartPanel);
@@ -136,6 +152,9 @@ public class DetailChartPanel {
 
         mTabPane.addTab(Const.Panel.SCREEN_TOGGLED_INFO, mScreenToggledPanel);
         mTabPane.addTab(Const.Panel.BINDER_SAMPLE_INFO, mBinderSamplePanel);
+
+        mTabPane.addTab(Const.Panel.FRAME_DROP, mFrameDropPanel);
+
 
         mJPanel.add(mTabPane);
 
@@ -170,6 +189,8 @@ public class DetailChartPanel {
         mLaunchTimeTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mScreenToggledTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mBinderSampleTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        
+        mFrameDropTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
     }
 
     public JPanel getJPanel() {
@@ -198,6 +219,8 @@ public class DetailChartPanel {
         performParseScreenToggled(startTime, endTime);
         performParseBinderSample(startTime, endTime);
 
+        performParseFrameDrop(startTime, endTime);
+    
         mDetailInfo.setText(result.toString());
     }
 
@@ -352,7 +375,7 @@ public class DetailChartPanel {
         
         result.append("Proc Died Count: " + procDieds.size() + "\n\n");
         
-        String[] title = { Const.Panel.TIME, Const.Panel.PACKAGE_NAME, Const.Panel.PID, Const.Panel.USER};
+        String[] title = { Const.Panel.TIME, Const.Panel.PACKAGE_NAME, Const.Panel.PID, Const.Panel.USER, Const.Panel.OOM_ADJ, Const.Panel.PROC_STATE};
 
         String[][] items = new String[procDieds.size()][title.length];
 
@@ -361,6 +384,8 @@ public class DetailChartPanel {
             items[i][1] = procDieds.get(i).getProcessName();
             items[i][2] = procDieds.get(i).getPID().toString();
             items[i][3] = procDieds.get(i).getUser().toString();
+            items[i][4] = procDieds.get(i).getOomAdj().toString();
+            items[i][5] = procDieds.get(i).getProcState().toString();
         }
 
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
@@ -564,6 +589,24 @@ public class DetailChartPanel {
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
         mBinderSampleTable.setModel(appTM);
     }
+
+    private void performParseFrameDrop(long startTime, long endTime) {
+        ArrayList<FrameDrop> framedrop = mAlogEventParser.getFrameDrop(startTime, endTime);
+        if(null == framedrop || 0 == framedrop.size()) {
+            mFrameDropTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+            return;
+        }
+        String[] title = {Const.Panel.TIME, Const.Panel.FRAME_DROP};
+        String[][] items = new String[framedrop.size()][title.length];
+        for(int i = 0; i < framedrop.size(); i++) {
+            items[i][0] = format.format(framedrop.get(i).getTime());
+            items[i][1] = framedrop.get(i).getFrameDrop().toString();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(title, items);
+        mFrameDropTable.setModel(appTM);
+    }
+
+
 }
 
 
