@@ -25,6 +25,7 @@ import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.BinderSample;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Crash;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.FrameDrop;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.LMK;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.PSS;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
@@ -47,6 +48,9 @@ public class DetailChartPanel {
     private JPanel mBinderSamplePanel;
     
     private JPanel mFrameDropPanel;
+    
+    private JPanel mLMKPanel;
+
 
     private JTable mCPUTopTable;
     private JTable mProcStartTable;
@@ -60,6 +64,8 @@ public class DetailChartPanel {
     private JTable mBinderSampleTable;
     
     private JTable mFrameDropTable;
+    
+    private JTable mLMKTable;
 
     private JTextArea mDetailInfo;
     private JTabbedPane mTabPane;
@@ -110,6 +116,7 @@ public class DetailChartPanel {
 
         mFrameDropPanel = new JPanel(new BorderLayout());
 
+        mLMKPanel = new JPanel(new BorderLayout());
 
 
 
@@ -125,6 +132,8 @@ public class DetailChartPanel {
         mBinderSampleTable = new JTable();
 
         mFrameDropTable = new JTable();
+        
+        mLMKTable = new JTable();
 
 
 
@@ -140,6 +149,8 @@ public class DetailChartPanel {
         mBinderSamplePanel.add(new JScrollPane(mBinderSampleTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
 
         mFrameDropPanel.add(new JScrollPane(mFrameDropTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        
+        mLMKPanel.add(new JScrollPane(mLMKTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
 
 
         mTabPane.addTab(Const.Panel.CPU_TOP_INFO, mCPUTopPanel);
@@ -154,6 +165,8 @@ public class DetailChartPanel {
         mTabPane.addTab(Const.Panel.BINDER_SAMPLE_INFO, mBinderSamplePanel);
 
         mTabPane.addTab(Const.Panel.FRAME_DROP, mFrameDropPanel);
+        
+        mTabPane.addTab(Const.Panel.LMK, mLMKPanel);
 
 
         mJPanel.add(mTabPane);
@@ -191,6 +204,8 @@ public class DetailChartPanel {
         mBinderSampleTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         
         mFrameDropTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        
+        mLMKTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
     }
 
     public JPanel getJPanel() {
@@ -220,6 +235,8 @@ public class DetailChartPanel {
         performParseBinderSample(startTime, endTime);
 
         performParseFrameDrop(startTime, endTime);
+        
+        performParseLMK(startTime, endTime);
     
         mDetailInfo.setText(result.toString());
     }
@@ -606,6 +623,21 @@ public class DetailChartPanel {
         mFrameDropTable.setModel(appTM);
     }
 
+    private void performParseLMK(long startTime, long endTime) {
+        ArrayList<LMK> lmk = mAlogEventParser.getLMK(startTime, endTime);
+        if(null == lmk || 0 == lmk.size()) {
+            mLMKTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+            return;
+        }
+        String[] title = {Const.Panel.TIME, Const.Panel.DESCRIPTION};
+        String[][] items = new String[lmk.size()][title.length];
+        for(int i = 0; i < lmk.size(); i++) {
+            items[i][0] = format.format(lmk.get(i).getTime());
+            items[i][1] = lmk.get(i).getDescription();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(title, items);
+        mLMKTable.setModel(appTM);
+    }
 
 }
 

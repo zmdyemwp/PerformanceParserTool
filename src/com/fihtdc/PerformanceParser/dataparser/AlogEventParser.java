@@ -34,6 +34,8 @@ import java.util.ArrayList;
  *     <li><b>screen_toggled</b>    (see {@link ScreenToggled})</li>
  *     <li><b>binder_sample</b>    (see {@link BinderSample})</li>
  *     <li><b>choreographer_skip_frames</b>    (see {@link FrameDrop})</li>
+ *     <li><b>cpu</b>    (see {@link CPUInfo})</li>
+ *     <li><b>klogd lowmemorykiller</b>    (see {@link LMK})</li>
  * </ul>
  * <br>
  * <br>
@@ -75,8 +77,11 @@ public class AlogEventParser {
         if(null != sScheduleServiceRestart) sScheduleServiceRestart.clear();
         if(null != sActivityFocused) sActivityFocused.clear();
         if(null != sTop) sTop.clear();
+        if(null != sCPUInfo) sCPUInfo.clear();
         if(null != sScreenToggled) sScreenToggled.clear();
         if(null != sBinderSample) sBinderSample.clear();
+        if(null != sFrameDrop) sFrameDrop.clear();
+        if(null != sLMK) sLMK.clear();
     }
 
 
@@ -130,6 +135,11 @@ public class AlogEventParser {
         if(0 < sScheduleServiceRestart.size() && start > sScheduleServiceRestart.get(0).getTime()) start = sScheduleServiceRestart.get(0).getTime();
         if(0 < sActivityFocused.size() && start > sActivityFocused.get(0).getTime()) start = sActivityFocused.get(0).getTime();
         if(0 < sTop.size() && start > sTop.get(0).getTime()) start = sTop.get(0).getTime();
+        if(0 < sCPUInfo.size() && start > sCPUInfo.get(0).getTime()) start = sCPUInfo.get(0).getTime();
+        if(0 < sScreenToggled.size() && start > sScreenToggled.get(0).getTime()) start = sScreenToggled.get(0).getTime();
+        if(0 < sBinderSample.size() && start > sBinderSample.get(0).getTime()) start = sBinderSample.get(0).getTime();
+        if(0 < sFrameDrop.size() && start > sFrameDrop.get(0).getTime()) start = sFrameDrop.get(0).getTime();
+        if(0 < sLMK.size() && start > sLMK.get(0).getTime()) start = sLMK.get(0).getTime();
 
         return start;
     }
@@ -175,8 +185,23 @@ public class AlogEventParser {
         theSize = sActivityFocused.size();
         if(0 < theSize && end < sActivityFocused.get(theSize - 1).getTime()) end = sActivityFocused.get(theSize - 1).getTime();
         
+        theSize = sCPUInfo.size();
+        if(0 < theSize && end < sCPUInfo.get(theSize - 1).getTime()) end = sCPUInfo.get(theSize - 1).getTime();
+        
+        theSize = sScreenToggled.size();
+        if(0 < theSize && end < sScreenToggled.get(theSize - 1).getTime()) end = sScreenToggled.get(theSize - 1).getTime();
+        
+        theSize = sBinderSample.size();
+        if(0 < theSize && end < sBinderSample.get(theSize - 1).getTime()) end = sBinderSample.get(theSize - 1).getTime();
+        
+        theSize = sFrameDrop.size();
+        if(0 < theSize && end < sFrameDrop.get(theSize - 1).getTime()) end = sFrameDrop.get(theSize - 1).getTime();
+        
         theSize = sTop.size();
         if(0 < theSize && end < sTop.get(theSize - 1).getTime()) end = sTop.get(theSize - 1).getTime();
+
+        theSize = sLMK.size();
+        if(0 < theSize && end < sLMK.get(theSize - 1).getTime()) end = sLMK.get(theSize - 1).getTime();
 
         return end;
     }
@@ -268,6 +293,9 @@ public class AlogEventParser {
                 }
             }
             break;
+        case CPUInfo.TAG:
+            sCPUInfo.add(new CPUInfo(line));
+            break;
         case ScreenToggled.TAG:
             sScreenToggled.add(new ScreenToggled(line));
             break;
@@ -276,6 +304,11 @@ public class AlogEventParser {
             break;
         case FrameDrop.TAG:
             sFrameDrop.add(new FrameDrop(line));
+            break;
+        case LMK.klogd:
+            if(line.contains(LMK.lmk_tag)) {
+                sLMK.add(new LMK(line));
+            }
             break;
         default:
             //debugmsg("TAG NOT FOUND: " + tag);
@@ -1277,6 +1310,56 @@ public class AlogEventParser {
     }
 
 
+
+    public class CPUInfo extends BaseEvent {
+        public static final String TAG = "cpu";
+        public CPUInfo(String line) {
+            super(line);
+            String values = getEventValues(line);
+            String[] params = values.split(",");
+            total = Integer.parseInt(params[0]);
+            user = Integer.parseInt(params[1]);
+            system = Integer.parseInt(params[2]);
+            iowait = Integer.parseInt(params[3]);
+            irq = Integer.parseInt(params[4]);
+            soft_irq = Integer.parseInt(params[5]);
+        }
+        public Integer getTotal() {
+            return total;
+        }
+        public Integer getUser() {
+            return user;
+        }
+        public Integer getSystem() {
+            return system;
+        }
+        public Integer getIOWait() {
+            return iowait;
+        }
+        public Integer getIRQ() {
+            return irq;
+        }
+        public Integer getSoftIRQ() {
+            return soft_irq;
+        }
+        Integer total;
+        Integer user;
+        Integer system;
+        Integer iowait;
+        Integer irq;
+        Integer soft_irq;
+        public String toString() {
+            return super.toString() + String.format("%d,%d,%d,%d,%d,%d", total,user,system,iowait,irq,soft_irq);
+        }
+    }
+    static ArrayList<CPUInfo> sCPUInfo = new ArrayList<CPUInfo>();
+    public ArrayList<CPUInfo> getCPUInfo(long startTime, long endTime) {
+        return getBaseEvent(sCPUInfo, startTime, endTime);
+    }
+
+
+
+
     public class ScreenToggled extends BaseEvent {
         public static final String TAG = "screen_toggled";
         private static final String xTAG = "screen_toggled:";
@@ -1368,6 +1451,38 @@ public class AlogEventParser {
     public ArrayList<FrameDrop> getFrameDrop(long startTime, long endTime) {
         return getBaseEvent(sFrameDrop, startTime, endTime);
     }
+
+
+
+    public class LMK extends BaseEvent {
+        public static final String TAG = "LMK";
+        public static final String lmk_tag = "lowmemorykiller:";
+        public static final String klogd = "klogd";
+        LMK(String line) {
+            super(line);
+            int index = line.indexOf(klogd);
+            if(-1 != index) {
+                description = line.substring(index);
+            } else {
+                description = "";
+            }
+        }
+        String description;
+        public String getDescription() {
+            return description;
+        }
+        public String toString() {
+            return super.toString() + description;
+        }
+    }
+    static ArrayList<LMK> sLMK = new ArrayList<LMK>();
+    public ArrayList<LMK> getLMK(long startTime, long endTime) {
+        return getBaseEvent(sLMK, startTime, endTime);
+    }
+
+
+
+
 
 
     /**

@@ -8,6 +8,7 @@ import java.util.List;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.LMK;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ScreenToggled;
@@ -52,6 +53,13 @@ public class XYMultiDataSet {
             /* Memory Information */
             new DataSetElement(Const.LineTitles.MEMINFO, Const.PPColors.LINE_MEM_INFO,
                     Const.LineStyle.SOLID, Const.LineSeat.MAIN),
+            
+            
+            /* LMK */
+            new DataSetElement(Const.LineTitles.LMK, Const.PPColors.TASK_LMK,
+                    Const.LineStyle.SOLID, Const.LineSeat.SUB),
+            
+            
         };
     }
 
@@ -135,6 +143,15 @@ public class XYMultiDataSet {
                         xyDataSet.add(tmes[j], 1);
                     }
                     break;
+                    
+                case Const.LineTitles.LMK:
+                    ArrayList<LMK> lmk = mAlogEventParser.getLMK(Long.MIN_VALUE, Long.MAX_VALUE);
+                    for(int j = 0; j < lmk.size(); j++) {
+                        xyDataSet.add(lmk.get(j).getTime(), 1);
+                    }
+                    break;
+                    
+                    
                 default:
                     System.out.println("DateSet not found");
                     break;

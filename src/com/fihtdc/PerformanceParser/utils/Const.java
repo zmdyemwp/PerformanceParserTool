@@ -12,7 +12,7 @@ public final class Const {
 
     
     public static final class Version {
-        public static final String NUMBER = "v1.0.1";
+        public static final String NUMBER = "v1.0.2";
     }
     
     public static final class PathName {
@@ -76,6 +76,9 @@ public final class Const {
         public static final String REASON = "Reason";
         
         public static final String OOM = "OOM";
+        public static final String LMK = "LMK";
+        
+        public static final String DESCRIPTION = "Description";
     }
     
     public static final class ItemCMD {
@@ -137,6 +140,7 @@ public final class Const {
         public static final Color TASK_PROC_DIED = new Color(252, 180, 65);
         public static final Color SCREEN_TOGGLED = new Color(255, 255, 255);
         public static final Color LINE_MEM_INFO = new Color(200, 200, 100);
+        public static final Color TASK_LMK = new Color(255,255,255);
     }
     
     public static final class LineTitles {
@@ -156,6 +160,7 @@ public final class Const {
         public static final String MEMINFO_NATIVE = "native";
         public static final String MEMINFO_CACHED = "cached";
         public static final String MEMINFO_FREE = "free";
+        public static final String LMK = "LMK";
     }
 
     public static final class Symbols {
