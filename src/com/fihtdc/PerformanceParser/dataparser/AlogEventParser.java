@@ -857,7 +857,9 @@ public class AlogEventParser {
             pid = Integer.parseInt(params[1]);
             process_name = params[2];
             if(3 < params.length) oom_adj = Integer.parseInt(params[3]);
+            else oom_adj = new Integer(0);
             if(4 < params.length) proc_state = Integer.parseInt(params[4]);
+            else proc_state = new Integer(0);
         }
         Integer user;
         Integer pid;

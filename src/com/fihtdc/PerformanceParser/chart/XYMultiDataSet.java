@@ -7,13 +7,14 @@ import java.util.List;
 
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.CPUInfo;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.LMK;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.MemInfo;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ScreenToggled;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Top;
-import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.MemInfo;
 import com.fihtdc.PerformanceParser.utils.Const;
 
 public class XYMultiDataSet {
@@ -72,14 +73,28 @@ public class XYMultiDataSet {
             switch(mDataSetElement[i].getTitke()) {
                 case Const.LineTitles.CPU_TOP:
                     ArrayList<Top> tops = mAlogEventParser.getTop(Long.MIN_VALUE, Long.MAX_VALUE);
-                    for(int j = 0; j < tops.size(); j++) {
-                        Integer[] arrayY = new Integer[4];
-                        arrayY[0] = tops.get(j).getIRQ();
-                        arrayY[1] = tops.get(j).getIOWait();
-                        arrayY[2] = tops.get(j).getSystemUsage();
-                        arrayY[3] = tops.get(j).getUserUsage();
-                        xyDataSet.add(tops.get(j).getTime(), arrayY);
+                    ArrayList<CPUInfo> cpus = mAlogEventParser.getCPUInfo(Long.MIN_VALUE, Long.MAX_VALUE);
+                    if(0 < cpus.size()) {
+                        for(int j = 0; j < cpus.size(); j++) {
+                            Integer[] arrayY = new Integer[5];
+                            arrayY[0] = cpus.get(j).getIRQ();
+                            arrayY[1] = cpus.get(j).getSoftIRQ();
+                            arrayY[2] = cpus.get(j).getIOWait();
+                            arrayY[3] = cpus.get(j).getSystem();
+                            arrayY[4] = cpus.get(j).getUser();
+                            xyDataSet.add(cpus.get(j).getTime(), arrayY);
+                        }
+                    } else {
+                        for(int j = 0; j < tops.size(); j++) {
+                            Integer[] arrayY = new Integer[4];
+                            arrayY[0] = tops.get(j).getIRQ();
+                            arrayY[1] = tops.get(j).getIOWait();
+                            arrayY[2] = tops.get(j).getSystemUsage();
+                            arrayY[3] = tops.get(j).getUserUsage();
+                            xyDataSet.add(tops.get(j).getTime(), arrayY);
+                        }
                     }
+
                     break;
 
                 case Const.LineTitles.MEMINFO:

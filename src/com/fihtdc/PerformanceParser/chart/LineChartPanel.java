@@ -153,18 +153,34 @@ public class LineChartPanel {
         mTimeTableXYDataset = new TimeTableXYDataset();
         try {
             for (XYDataSet mXYDataSet : mXYMultiDataSet) {
-                if (mXYDataSet.getSeat().equals(Const.LineSeat.MAIN) && mXYDataSet.getTitle().equals(Const.LineTitles.CPU_TOP)) {
+                if (mXYDataSet.getSeat().equals(Const.LineSeat.MAIN)
+                        && mXYDataSet.getTitle().equals(Const.LineTitles.CPU_TOP)
+                        && 0 < mXYDataSet.getItemCount()) {
+                    boolean isCpuInfo = 5 == mXYDataSet.getArrayY(0).size();
+
                     for (int i = 0; i < mXYDataSet.getArrayItemCount(); i++) {
                         Date dataTime = new Date(((long) mXYDataSet.getArrayX(i)));
-
-                        mTimeTableXYDataset.add(new Minute(dataTime),
-                                mXYDataSet.getArrayY(i).get(0), Const.LineTitles.TOP_SUB_IRQ);
-                        mTimeTableXYDataset.add(new Minute(dataTime),
-                                mXYDataSet.getArrayY(i).get(1), Const.LineTitles.TOP_SUB_IOWAIT);
-                        mTimeTableXYDataset.add(new Minute(dataTime),
-                                mXYDataSet.getArrayY(i).get(2), Const.LineTitles.TOP_SUB_SYSTEM_USAGE);
-                        mTimeTableXYDataset.add(new Minute(dataTime),
-                                mXYDataSet.getArrayY(i).get(3), Const.LineTitles.TOP_SUB_USER_USAGE);
+                        if(isCpuInfo) {
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(0), Const.LineTitles.TOP_SUB_IRQ);
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(1), Const.LineTitles.TOP_SUB_SOFT_IRQ);
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(2), Const.LineTitles.TOP_SUB_IOWAIT);
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(3), Const.LineTitles.TOP_SUB_SYSTEM_USAGE);
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(4), Const.LineTitles.TOP_SUB_USER_USAGE);
+                        } else {
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(0), Const.LineTitles.TOP_SUB_IRQ);
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(1), Const.LineTitles.TOP_SUB_IOWAIT);
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(2), Const.LineTitles.TOP_SUB_SYSTEM_USAGE);
+                            mTimeTableXYDataset.add(new Minute(dataTime),
+                                    mXYDataSet.getArrayY(i).get(3), Const.LineTitles.TOP_SUB_USER_USAGE);
+                        }
                     }
                 }
             }

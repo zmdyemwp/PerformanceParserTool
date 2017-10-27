@@ -22,6 +22,7 @@ import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ANR;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityLaunchTime;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.BinderSample;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.CPUInfo;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Crash;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.FrameDrop;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
@@ -37,6 +38,8 @@ public class DetailChartPanel {
 
     private JPanel mJPanel;
     private JPanel mCPUTopPanel;
+    private JPanel mCPUPanel;
+
     private JPanel mProcStartPanel;
     private JPanel mFocusedPanel;
     private JPanel mProcDiedPanel;
@@ -53,6 +56,8 @@ public class DetailChartPanel {
 
 
     private JTable mCPUTopTable;
+    private JTable mCPUTable;
+
     private JTable mProcStartTable;
     private JTable mFocusedTable;
     private JTable mProcDiedTable;
@@ -104,6 +109,8 @@ public class DetailChartPanel {
 
         mTabPane = new JTabbedPane();
         mCPUTopPanel = new JPanel(new BorderLayout());
+        mCPUPanel = new JPanel(new BorderLayout());
+
         mProcStartPanel = new JPanel(new BorderLayout());
         mFocusedPanel = new JPanel(new BorderLayout());
         mProcDiedPanel = new JPanel(new BorderLayout());
@@ -121,6 +128,8 @@ public class DetailChartPanel {
 
 
         mCPUTopTable = new JTable();
+        mCPUTable = new JTable();
+
         mProcStartTable = new JTable();
         mFocusedTable = new JTable();
         mProcDiedTable = new JTable();
@@ -138,6 +147,8 @@ public class DetailChartPanel {
 
 
         mCPUTopPanel.add(new JScrollPane(mCPUTopTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        mCPUPanel.add(new JScrollPane(mCPUTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+
         mProcStartPanel.add(new JScrollPane(mProcStartTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mFocusedPanel.add(new JScrollPane(mFocusedTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         mProcDiedPanel.add(new JScrollPane(mProcDiedTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
@@ -154,6 +165,8 @@ public class DetailChartPanel {
 
 
         mTabPane.addTab(Const.Panel.CPU_TOP_INFO, mCPUTopPanel);
+        mTabPane.addTab(Const.Panel.CPU_INFO, mCPUPanel);
+
         mTabPane.addTab(Const.Panel.PROC_START_INFO, mProcStartPanel);
         mTabPane.addTab(Const.Panel.FOCUSED_INFO, mFocusedPanel);
         mTabPane.addTab(Const.Panel.PROC_DIED_INFO, mProcDiedPanel);
@@ -194,6 +207,8 @@ public class DetailChartPanel {
         mDetailInfo.append(Const.Panel.TIME + ": ");
         
         mCPUTopTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        mCPUTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+
         mProcStartTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mFocusedTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         mProcDiedTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
@@ -222,6 +237,8 @@ public class DetailChartPanel {
         // mDetailInfo.setText(result.toString());
 
         performParseCPUTopList(startTime, endTime);
+        performParseCPUInfo(startTime, endTime);
+
         performParseProcStartList(startTime, endTime);
         performParseFocusedList(startTime, endTime);
         performParseProcDiedList(startTime, endTime);
@@ -637,6 +654,30 @@ public class DetailChartPanel {
         }
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
         mLMKTable.setModel(appTM);
+    }
+    
+    
+    private void performParseCPUInfo(long startTime, long endTime) {
+        ArrayList<CPUInfo> cpu = mAlogEventParser.getCPUInfo(startTime, endTime);
+        if(null == cpu || 0 == cpu.size()) {
+            mCPUTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+            return;
+        }
+        String[] titles = {Const.Panel.TIME,
+                Const.Panel.USER,Const.Panel.SYSTEM,Const.Panel.IOWAIT,
+                Const.Panel.SOFT_IRQ, Const.Panel.IRQ, Const.Panel.TOTAL};
+        String[][] items = new String[cpu.size()][titles.length];
+        for(int i = 0; i < cpu.size(); i++) {
+            items[i][0] = format.format(cpu.get(i).getTime());
+            items[i][1] = cpu.get(i).getUser().toString();
+            items[i][2] = cpu.get(i).getSystem().toString();
+            items[i][3] = cpu.get(i).getIOWait().toString();
+            items[i][4] = cpu.get(i).getSoftIRQ().toString();
+            items[i][5] = cpu.get(i).getIRQ().toString();
+            items[i][6] = cpu.get(i).getTotal().toString();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(titles, items);
+        mCPUTable.setModel(appTM);
     }
 
 }

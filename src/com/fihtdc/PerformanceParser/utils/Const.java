@@ -12,7 +12,7 @@ public final class Const {
 
     
     public static final class Version {
-        public static final String NUMBER = "v1.0.2";
+        public static final String NUMBER = "v1.0.3";
     }
     
     public static final class PathName {
@@ -36,7 +36,9 @@ public final class Const {
         public static final String DATE_TIME = "Date/Time";
         public static final String TOP_AXIS_TITLE = "Top Level(%)";
         
-        public static final String CPU_TOP_INFO = "CPU TOP Info";
+        public static final String CPU_TOP_INFO = "TOP: CPU Loading";
+        public static final String CPU_INFO = "CPU Loading";
+
         public static final String PROC_START_INFO = "Proc Start Info";
         public static final String PROC_DIED_INFO = "Proc Died Info";
         public static final String KILL_INFO = "Kill Info";
@@ -79,6 +81,12 @@ public final class Const {
         public static final String LMK = "LMK";
         
         public static final String DESCRIPTION = "Description";
+        
+        public static final String SYSTEM = "System";
+        public static final String IOWAIT = "IOWait";
+        public static final String SOFT_IRQ = "Soft IRQ";
+        public static final String IRQ = "IRQ";
+        public static final String TOTAL = "Total";
     }
     
     public static final class ItemCMD {
@@ -147,6 +155,7 @@ public final class Const {
         public static final String CPU_TOP = "CPU TOP";
         public static final String TOP_SUB_IOWAIT = "IOWait";
         public static final String TOP_SUB_IRQ = "IRQ";
+        public static final String TOP_SUB_SOFT_IRQ = "SoftIRQ";
         public static final String TOP_SUB_SYSTEM_USAGE = "Syetem Usage";
         public static final String TOP_SUB_USER_USAGE = "User Usage";
         public static final String PROC_START = "proc_start";
