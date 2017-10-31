@@ -153,13 +153,13 @@ public class LineChartPanel {
         mTimeTableXYDataset = new TimeTableXYDataset();
         try {
             for (XYDataSet mXYDataSet : mXYMultiDataSet) {
-                if (mXYDataSet.getSeat().equals(Const.LineSeat.MAIN)
+                if ( mXYDataSet.getSeat().equals(Const.LineSeat.MAIN)
                         && mXYDataSet.getTitle().equals(Const.LineTitles.CPU_TOP)
-                        && 0 < mXYDataSet.getItemCount()) {
+                        && 0 < mXYDataSet.getArrayItemCount()) {
                     boolean isCpuInfo = 5 == mXYDataSet.getArrayY(0).size();
 
                     for (int i = 0; i < mXYDataSet.getArrayItemCount(); i++) {
-                        Date dataTime = new Date(((long) mXYDataSet.getArrayX(i)));
+                        Date dataTime = new Date(((long) mXYDataSet.getArrayX(i) - 60000));    // move one minute backward
                         if(isCpuInfo) {
                             mTimeTableXYDataset.add(new Minute(dataTime),
                                     mXYDataSet.getArrayY(i).get(0), Const.LineTitles.TOP_SUB_IRQ);

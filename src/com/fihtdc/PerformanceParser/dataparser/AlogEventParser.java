@@ -36,6 +36,7 @@ import java.util.ArrayList;
  *     <li><b>choreographer_skip_frames</b>    (see {@link FrameDrop})</li>
  *     <li><b>cpu</b>    (see {@link CPUInfo})</li>
  *     <li><b>klogd lowmemorykiller</b>    (see {@link LMK})</li>
+ *     <li><b>am_set_resumed_activity</b>    (see {@link Resume})</li>
  * </ul>
  * <br>
  * <br>
@@ -82,6 +83,7 @@ public class AlogEventParser {
         if(null != sBinderSample) sBinderSample.clear();
         if(null != sFrameDrop) sFrameDrop.clear();
         if(null != sLMK) sLMK.clear();
+        if(null != sResume) sResume.clear();
     }
 
 
@@ -140,6 +142,7 @@ public class AlogEventParser {
         if(0 < sBinderSample.size() && start > sBinderSample.get(0).getTime()) start = sBinderSample.get(0).getTime();
         if(0 < sFrameDrop.size() && start > sFrameDrop.get(0).getTime()) start = sFrameDrop.get(0).getTime();
         if(0 < sLMK.size() && start > sLMK.get(0).getTime()) start = sLMK.get(0).getTime();
+        if(0 < sResume.size() && start > sResume.get(0).getTime()) start = sResume.get(0).getTime();
 
         return start;
     }
@@ -202,6 +205,9 @@ public class AlogEventParser {
 
         theSize = sLMK.size();
         if(0 < theSize && end < sLMK.get(theSize - 1).getTime()) end = sLMK.get(theSize - 1).getTime();
+
+        theSize = sResume.size();
+        if(0 < theSize && end < sResume.get(theSize - 1).getTime()) end = sResume.get(theSize - 1).getTime();
 
         return end;
     }
@@ -310,6 +316,13 @@ public class AlogEventParser {
                 sLMK.add(new LMK(line));
             }
             break;
+
+        case Resume.TAG:
+            sResume.add(new Resume(line));
+            break;
+
+
+
         default:
             //debugmsg("TAG NOT FOUND: " + tag);
             break;
@@ -1483,7 +1496,36 @@ public class AlogEventParser {
     }
 
 
-
+    public class Resume extends BaseEvent {
+        public static final String TAG = "am_set_resumed_activity";
+        Resume(String line) {
+            super(line);
+            String values = getEventValues(line);
+            String[] params = values.split(",");
+            user = Integer.parseInt(params[0]);
+            component = params[1];
+            reason = params[2];
+        }
+        Integer user;
+        String component;
+        String reason;
+        public Integer getUser() {
+            return user;
+        }
+        public String getComponent() {
+            return component;
+        }
+        public String getReason() {
+            return reason;
+        }
+        public String toString() {
+            return super.toString() + String.format("%d,%s,%s", user, component, reason);
+        }
+    }
+    ArrayList<Resume> sResume = new ArrayList<Resume>();
+    public ArrayList<Resume> getResume(long startTime, long endTime) {
+        return getBaseEvent(sResume, startTime, endTime);
+    }
 
 
 

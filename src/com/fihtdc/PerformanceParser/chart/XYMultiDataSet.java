@@ -13,6 +13,7 @@ import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.LMK;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.MemInfo;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Resume;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ScreenToggled;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Top;
 import com.fihtdc.PerformanceParser.utils.Const;
@@ -124,12 +125,22 @@ public class XYMultiDataSet {
                 case Const.LineTitles.FOCUSED:
                     ArrayList<ActivityFocused> focuseds = 
                         mAlogEventParser.getActivityFocused(Long.MIN_VALUE, Long.MAX_VALUE);
+                    ArrayList<Resume> resumes =
+                        mAlogEventParser.getResume(Long.MIN_VALUE, Long.MAX_VALUE);
 
-                    for(int j = 0; j < focuseds.size(); j++) {
-                        xyDataSet.add(focuseds.get(j).getTime(), 1);
+                    if(resumes.size() > 0) {
+                        for(int j = 0; j < resumes.size(); j++) {
+                            xyDataSet.add(resumes.get(j).getTime(), 1);
+                        }
+                    } else {
+                        for(int j = 0; j < focuseds.size(); j++) {
+                            xyDataSet.add(focuseds.get(j).getTime(), 1);
+                        }
                     }
-                    
+
                     break;
+
+
                 case Const.LineTitles.PROC_START:
                     ArrayList<ProcStart> procStarts = mAlogEventParser.getAmProcStart(Long.MIN_VALUE, Long.MAX_VALUE);
                     

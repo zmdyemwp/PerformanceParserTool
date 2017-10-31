@@ -30,6 +30,7 @@ import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.LMK;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.PSS;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcDied;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ProcStart;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Resume;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ScreenToggled;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Top;
 import com.fihtdc.PerformanceParser.utils.Const;
@@ -377,8 +378,10 @@ public class DetailChartPanel {
     
     private void performParseFocusedList(long startTime, long endTime) {
         ArrayList<ActivityFocused> focuseds = mAlogEventParser.getActivityFocused(startTime, endTime);
+        ArrayList<Resume> resumes = mAlogEventParser.getResume(startTime, endTime);
         
-        if (focuseds == null || focuseds.size() == 0) {
+        if ( (null == resumes && null == focuseds) || 
+                (0 == resumes.size() && 0 == focuseds.size()) ) {
             mFocusedTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
             return;
         }
@@ -387,12 +390,22 @@ public class DetailChartPanel {
 
         String[][] items = new String[focuseds.size()][title.length];
 
-        for (int i = 0; i < focuseds.size(); i++) {
-            items[i][0] = format.format(focuseds.get(i).getTime());
-            items[i][1] = focuseds.get(i).getComponentName();
-            items[i][2] = focuseds.get(i).getReason();
-            items[i][3] = focuseds.get(i).getUser().toString();
+        if(0 < resumes.size()) {
+            for (int i = 0; i < focuseds.size(); i++) {
+                items[i][0] = format.format(resumes.get(i).getTime());
+                items[i][1] = resumes.get(i).getComponent();
+                items[i][2] = resumes.get(i).getReason();
+                items[i][3] = resumes.get(i).getUser().toString();
+            }
+        } else {
+            for (int i = 0; i < focuseds.size(); i++) {
+                items[i][0] = format.format(focuseds.get(i).getTime());
+                items[i][1] = focuseds.get(i).getComponentName();
+                items[i][2] = focuseds.get(i).getReason();
+                items[i][3] = focuseds.get(i).getUser().toString();
+            }
         }
+
 
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
         mFocusedTable.setModel(appTM);
