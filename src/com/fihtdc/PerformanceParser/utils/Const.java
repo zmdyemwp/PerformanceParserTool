@@ -87,6 +87,15 @@ public final class Const {
         public static final String SOFT_IRQ = "Soft IRQ";
         public static final String IRQ = "IRQ";
         public static final String TOTAL = "Total";
+
+
+        public static final String FLAG = "Flag";
+        public static final String EXCEPTION = "Exception";
+        public static final String MESSAGE = "Message";
+        public static final String LINE_NUM = "Line Number";
+        
+        public static final String CRASH = "CRASH";
+        public static final String ANR = "ANR";
     }
     
     public static final class ItemCMD {
@@ -149,6 +158,9 @@ public final class Const {
         public static final Color SCREEN_TOGGLED = new Color(255, 255, 255);
         public static final Color LINE_MEM_INFO = new Color(200, 200, 100);
         public static final Color TASK_LMK = new Color(255,255,255);
+        public static final Color CRASH = new Color(255,0,0);
+        public static final Color ANR = new Color(255,255,60);
+        public static final Color FRAME_DROP = new Color(255,255,255);
     }
     
     public static final class LineTitles {
@@ -170,6 +182,9 @@ public final class Const {
         public static final String MEMINFO_CACHED = "cached";
         public static final String MEMINFO_FREE = "free";
         public static final String LMK = "LMK";
+        public static final String CRASH = "CRASH";
+        public static final String ANR = "ANR";
+        public static final String FRAME_DROP = "Frame Drop";
     }
 
     public static final class Symbols {

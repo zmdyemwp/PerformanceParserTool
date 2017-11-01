@@ -56,9 +56,10 @@ public class LineChartPanel {
 
     public static final int CATEGORY_MAIN = 0;
     public static final int FIRST_SERIES = 0;
-    public static final int MAIN_PLOT_SCALE = 16;
-    public static final int MODE_PLOT_SCALE = 10;
+    public static final int MAIN_PLOT_SCALE = 12;
+    public static final int MODE_PLOT_SCALE = 14;
     public static final int MEM_PLOT_SCALE = 6;
+    public static final int FRAME_DROP_SCALE = 6;
     
     private AlogEventParser mAlogEventParser;
     private List<XYDataSet> mXYMultiDataSet;
@@ -124,6 +125,8 @@ public class LineChartPanel {
         /* Memory Information - MinSMChien - This will add a new char */
         XYPlot memInfoPlot = drawMemInfo();
         /* End Memory Information */
+        
+        XYPlot frameDropPlot = drawFrameDrop();
 
 
         multiXYPlot.setDomainAxis(mDateAxis);
@@ -137,6 +140,10 @@ public class LineChartPanel {
         /* Memory Information - MinSMChien - This will add a new char */
         multiXYPlot.add(memInfoPlot, MEM_PLOT_SCALE);
         /* End Memory Information */
+        /* Frame Drop Info - MinSMChien */
+        multiXYPlot.add(frameDropPlot, FRAME_DROP_SCALE);
+        /* End Frame Drop Info */
+        
         multiXYPlot.setGap(1d);
 
         JFreeChart mJFreeChart = new JFreeChart(multiXYPlot);
@@ -260,6 +267,60 @@ public class LineChartPanel {
     */
     /* END SCREEN_TOGGLED */
 
+
+
+
+    public XYPlot drawFrameDrop() {
+        XYPlot mXYPlot = new XYPlot();
+        int YAxisCount = 0;
+
+        TimeTableXYDataset frameDropXYDataset = new TimeTableXYDataset();
+        try {
+            for (XYDataSet mXYDataSet:mXYMultiDataSet) {
+                if (mXYDataSet.getSeat().equals(Const.LineSeat.MAIN) && mXYDataSet.getTitle().equals(Const.LineTitles.FRAME_DROP)) {
+                    for( int i = 0; i < mXYDataSet.getArrayItemCount(); i++) {
+                        Date dataTime = new Date(((long) mXYDataSet.getArrayX(i)));
+                        frameDropXYDataset.add(new Millisecond(dataTime),
+                                mXYDataSet.getArrayY(i).get(0), Const.LineTitles.FRAME_DROP);
+                    }
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        
+        //NumberAxis topAxis = new JNumberAxis(Const.Panel.TOP_AXIS_TITLE, Const.Axis.MIN_RANGE_Y, Const.Axis.MAX_RANGE_Y);
+        NumberAxis frameDropAxis = new NumberAxis();
+        frameDropAxis.setAutoRange(true);
+        frameDropAxis.setAutoRangeIncludesZero(true);
+        frameDropAxis.setTickUnit(new NumberTickUnit(50));
+
+        StackedXYBarRenderer frameDropRenderer = new StackedXYBarRenderer();
+        frameDropRenderer.setDrawBarOutline(false);
+        frameDropRenderer.setBaseItemLabelsVisible(true);
+        frameDropRenderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
+        frameDropRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
+        frameDropRenderer.setShadowVisible(false);
+        frameDropRenderer.setBarPainter(new StandardXYBarPainter());
+
+        mXYPlot.setDataset(YAxisCount, frameDropXYDataset);
+        mXYPlot.setRenderer(YAxisCount, frameDropRenderer);
+        mXYPlot.setRangeAxis(YAxisCount, frameDropAxis);
+        mXYPlot.mapDatasetToRangeAxis(YAxisCount, YAxisCount);
+        mXYPlot.setDomainGridlinesVisible(true);
+        mXYPlot.setBackgroundPaint(Color.BLACK);
+        mXYPlot.setRangeGridlinePaint(Color.lightGray);
+        mXYPlot.setDomainGridlinePaint(Color.lightGray);
+        
+        return mXYPlot;
+    }
+
+
+
+
+
+
     /* Memory Information - MinSMChien */
     public XYPlot drawMemInfo() {
         XYPlot mXYPlot = new XYPlot();
@@ -271,15 +332,15 @@ public class LineChartPanel {
                 if (mXYDataSet.getSeat().equals(Const.LineSeat.MAIN) && mXYDataSet.getTitle().equals(Const.LineTitles.MEMINFO)) {
                     for( int i = 0; i < mXYDataSet.getArrayItemCount(); i++) {
                         Date dataTime = new Date(((long) mXYDataSet.getArrayX(i)));
-                        memInfoXYDataset.add(new Millisecond(dataTime),
+                        memInfoXYDataset.add(new Minute(dataTime),
                                 mXYDataSet.getArrayY(i).get(0), Const.LineTitles.MEMINFO_ZRAM);
-                        memInfoXYDataset.add(new Millisecond(dataTime),
+                        memInfoXYDataset.add(new Minute(dataTime),
                                 mXYDataSet.getArrayY(i).get(1), Const.LineTitles.MEMINFO_KERNEL);
-                        memInfoXYDataset.add(new Millisecond(dataTime),
+                        memInfoXYDataset.add(new Minute(dataTime),
                                 mXYDataSet.getArrayY(i).get(2), Const.LineTitles.MEMINFO_NATIVE);
-                        memInfoXYDataset.add(new Millisecond(dataTime),
+                        memInfoXYDataset.add(new Minute(dataTime),
                                 mXYDataSet.getArrayY(i).get(3), Const.LineTitles.MEMINFO_CACHED);
-                        memInfoXYDataset.add(new Millisecond(dataTime),
+                        memInfoXYDataset.add(new Minute(dataTime),
                                 mXYDataSet.getArrayY(i).get(4), Const.LineTitles.MEMINFO_FREE);
                     }
                 }
@@ -287,11 +348,14 @@ public class LineChartPanel {
         } catch(Exception ex) {
             ex.printStackTrace();
         }
+        
+        /*      Stacked Area
         StackedXYAreaRenderer2 memInfoRenderer = new StackedXYAreaRenderer2(new StandardXYToolTipGenerator(), null);
         memInfoRenderer.setOutline(true);
         memInfoRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
         memInfoRenderer.setBaseItemLabelsVisible(true);
         memInfoRenderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
+        */
 
         /*
         TimeTableXYDataset localTimeTableXYDataset = new TimeTableXYDataset();
@@ -313,12 +377,17 @@ public class LineChartPanel {
         } catch(Exception ex) {
             ex.printStackTrace();
         }
+        */
+        
+        /* Stacked Bar */
         StackedXYBarRenderer memInfoRenderer = new StackedXYBarRenderer();
         memInfoRenderer.setDrawBarOutline(false);
         memInfoRenderer.setBaseItemLabelsVisible(true);
         memInfoRenderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
         memInfoRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
-        */
+        memInfoRenderer.setBarPainter(new StandardXYBarPainter());
+        memInfoRenderer.setShadowVisible(false);
+        
 
         NumberAxis memInfoAxis = new NumberAxis();
         memInfoAxis.setAutoRange(true);
@@ -384,7 +453,7 @@ public class LineChartPanel {
         topAxis.setAutoRange(true);
         topAxis.setAutoRangeIncludesZero(true);
         //topAxis.setRange(Const.Axis.MIN_RANGE_Y, Const.Axis.MAX_RANGE_Y);
-        topAxis.setTickUnit(new NumberTickUnit(5));
+        topAxis.setTickUnit(new NumberTickUnit(10));
 
         /*
         StackedXYAreaRenderer2 topRenderer = new StackedXYAreaRenderer2(new StandardXYToolTipGenerator(), null);
@@ -476,7 +545,7 @@ public class LineChartPanel {
         XYPlot mXYPlot = new XYPlot();
 
         String[] modeInfoTitle = new String[] {Const.LineTitles.FOCUSED, Const.LineTitles.PROC_START,
-                Const.LineTitles.PROC_DIED, Const.LineTitles.LMK};
+                Const.LineTitles.PROC_DIED, Const.LineTitles.LMK, Const.LineTitles.CRASH, Const.LineTitles.ANR};
 
         SymbolAxis yAxis = new SymbolAxis("", modeInfoTitle);
         yAxis.setGridBandsVisible(false);

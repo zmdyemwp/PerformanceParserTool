@@ -1382,7 +1382,7 @@ public class AlogEventParser {
             super(line);
             //String values = getEventValues(line);
             //String[] params = values.split(",");
-            debugmsg(line);
+            //debugmsg(line);
             onoff = Integer.parseInt(line.substring(line.indexOf(xTAG) + xTAG.length()).trim());
         }
         Integer onoff;
@@ -1452,7 +1452,7 @@ public class AlogEventParser {
             if(-1 == index) {
                 frame_drop = 0;
             } else {
-                debugmsg(line);
+                //debugmsg(line);
                 String value = line.substring(line.indexOf(":", index) + 1).trim();
                 frame_drop = Integer.parseInt(value);
             }
@@ -1526,6 +1526,9 @@ public class AlogEventParser {
     public ArrayList<Resume> getResume(long startTime, long endTime) {
         return getBaseEvent(sResume, startTime, endTime);
     }
+
+
+
 
 
 

@@ -6,8 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ANR;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.ActivityFocused;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.CPUInfo;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Crash;
+import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.FrameDrop;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.Kill;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.LMK;
 import com.fihtdc.PerformanceParser.dataparser.AlogEventParser.MemInfo;
@@ -62,6 +65,19 @@ public class XYMultiDataSet {
                     Const.LineStyle.SOLID, Const.LineSeat.SUB),
             
             
+            /* Crash */
+            new DataSetElement(Const.LineTitles.CRASH, Const.PPColors.CRASH,
+                    Const.LineStyle.SOLID, Const.LineSeat.SUB),
+            
+            /* ANR */
+            new DataSetElement(Const.LineTitles.ANR, Const.PPColors.ANR,
+                    Const.LineStyle.SOLID, Const.LineSeat.SUB),
+
+            /* FrameDrop */
+            new DataSetElement(Const.LineTitles.FRAME_DROP, Const.PPColors.FRAME_DROP,
+                    Const.LineStyle.SOLID, Const.LineSeat.MAIN),
+
+
         };
     }
 
@@ -118,7 +134,7 @@ public class XYMultiDataSet {
                     for(int j = 0; j < screens.size(); j++) {
                         xyDataSet.add(screens.get(j).getTime(), new Integer[] {screens.get(j).getScreenOnOff()});
                     }
-                    System.out.println("Screen Toggled #:" + screens.size() + ":" + xyDataSet.getArrayItemCount());
+                    //System.out.println("Screen Toggled #:" + screens.size() + ":" + xyDataSet.getArrayItemCount());
                     break;
 
 
@@ -176,8 +192,34 @@ public class XYMultiDataSet {
                         xyDataSet.add(lmk.get(j).getTime(), 1);
                     }
                     break;
-                    
-                    
+
+
+
+                case Const.LineTitles.CRASH:
+                    ArrayList<Crash> crash = mAlogEventParser.getCrash(Long.MIN_VALUE,Long.MAX_VALUE);
+                    for(int j = 0; j < crash.size(); j++) {
+                        xyDataSet.add(crash.get(j).getTime(), 1);
+                    }
+                    break;
+                case Const.LineTitles.ANR:
+                    ArrayList<ANR> anr = mAlogEventParser.getANR(Long.MIN_VALUE,Long.MAX_VALUE);
+                    for(int j = 0; j < anr.size(); j++) {
+                        xyDataSet.add(anr.get(j).getTime(), 1);
+                    }
+                    break;
+
+
+                case Const.LineTitles.FRAME_DROP:
+                    ArrayList<FrameDrop> framedrop = mAlogEventParser.getFrameDrop(Long.MIN_VALUE, Long.MAX_VALUE);
+                    for(int j = 0; j < framedrop.size(); j++) {
+                        xyDataSet.add(framedrop.get(j).getTime(), new Integer[] {framedrop.get(j).getFrameDrop()});
+                    }
+                    break;
+
+
+
+
+
                 default:
                     System.out.println("DateSet not found");
                     break;

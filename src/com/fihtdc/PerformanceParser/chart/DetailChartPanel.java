@@ -55,6 +55,9 @@ public class DetailChartPanel {
     
     private JPanel mLMKPanel;
 
+    private JPanel mCrashPanel;
+    private JPanel mANRPanel;
+
 
     private JTable mCPUTopTable;
     private JTable mCPUTable;
@@ -72,6 +75,9 @@ public class DetailChartPanel {
     private JTable mFrameDropTable;
     
     private JTable mLMKTable;
+    
+    private JTable mCrashTable;
+    private JTable mANRTable;
 
     private JTextArea mDetailInfo;
     private JTabbedPane mTabPane;
@@ -126,6 +132,10 @@ public class DetailChartPanel {
 
         mLMKPanel = new JPanel(new BorderLayout());
 
+        mCrashPanel = new JPanel(new BorderLayout());
+        mANRPanel = new JPanel(new BorderLayout());
+
+
 
 
         mCPUTopTable = new JTable();
@@ -144,6 +154,9 @@ public class DetailChartPanel {
         mFrameDropTable = new JTable();
         
         mLMKTable = new JTable();
+        
+        mCrashTable = new JTable();
+        mANRTable = new JTable();
 
 
 
@@ -163,6 +176,10 @@ public class DetailChartPanel {
         mFrameDropPanel.add(new JScrollPane(mFrameDropTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         
         mLMKPanel.add(new JScrollPane(mLMKTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        
+        
+        mCrashPanel.add(new JScrollPane(mCrashTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        mANRPanel.add(new JScrollPane(mANRTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
 
 
         mTabPane.addTab(Const.Panel.CPU_TOP_INFO, mCPUTopPanel);
@@ -181,7 +198,9 @@ public class DetailChartPanel {
         mTabPane.addTab(Const.Panel.FRAME_DROP, mFrameDropPanel);
         
         mTabPane.addTab(Const.Panel.LMK, mLMKPanel);
-
+        
+        mTabPane.addTab(Const.Panel.CRASH, mCrashPanel);
+        mTabPane.addTab(Const.Panel.ANR, mANRPanel);
 
         mJPanel.add(mTabPane);
 
@@ -222,6 +241,9 @@ public class DetailChartPanel {
         mFrameDropTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
         
         mLMKTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        
+        mCrashTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
+        mANRTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
     }
 
     public JPanel getJPanel() {
@@ -588,17 +610,49 @@ public class DetailChartPanel {
     private void performParseANR(long startTime, long endTime) {
         ArrayList<ANR> anrs = mAlogEventParser.getANR(startTime, endTime);
         if(null == anrs || 0 == anrs.size()) {
+            mANRTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
             return;
         }
         result.append("ANR Count: " + anrs.size() + "\n\n");
+
+        String[] titles = {Const.Panel.TIME, Const.Panel.USER, Const.Panel.PID, Const.Panel.PACKAGE_NAME, Const.Panel.FLAG,Const.Panel.REASON};
+        String[][] items = new String[anrs.size()][titles.length];
+        for(int i = 0; i < anrs.size(); i++) {
+            items[i][0] = format.format(anrs.get(i).getTime());
+            items[i][1] = anrs.get(i).getUser().toString();
+            items[i][2] = anrs.get(i).getPID().toString();
+            items[i][3] = anrs.get(i).getPackageName();
+            items[i][4] = anrs.get(i).getFlag().toString();
+            items[i][5] = anrs.get(i).getReason();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(titles, items);
+        mANRTable.setModel(appTM);
     }
 
     private void performParseCrash(long startTime, long endTime) {
         ArrayList<Crash> crashes = mAlogEventParser.getCrash(startTime, endTime);
         if(null == crashes || 0 == crashes.size()) {
+            mCrashTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
             return;
         }
         result.append("Crash Count: " + crashes.size() + "\n\n");
+
+        String[] titles = {Const.Panel.TIME, Const.Panel.USER, Const.Panel.PID, Const.Panel.COMPONENT_NAME,
+                Const.Panel.FLAG, Const.Panel.EXCEPTION, Const.Panel.MESSAGE, Const.Panel.FILE, Const.Panel.LINE_NUM};
+        String[][] items = new String[crashes.size()][titles.length];
+        for(int i = 0; i < crashes.size(); i++) {
+            items[i][0] = format.format(crashes.get(i).getTime());
+            items[i][1] = crashes.get(i).getUser().toString();
+            items[i][2] = crashes.get(i).getPID().toString();
+            items[i][3] = crashes.get(i).getProcessName();
+            items[i][4] = crashes.get(i).getFlag().toString();
+            items[i][5] = crashes.get(i).getException();
+            items[i][6] = crashes.get(i).getExceptionMessage();
+            items[i][7] = crashes.get(i).getFileName();
+            items[i][8] = crashes.get(i).getLineNumber().toString();
+        }
+        AppinfoTableModel appTM = new AppinfoTableModel(titles, items);
+        mCrashTable.setModel(appTM);
     }
 
     private void performParseScreenToggled(long startTime, long endTime) {
@@ -692,6 +746,14 @@ public class DetailChartPanel {
         AppinfoTableModel appTM = new AppinfoTableModel(titles, items);
         mCPUTable.setModel(appTM);
     }
+
+
+
+
+
+
+
+
 
 }
 
