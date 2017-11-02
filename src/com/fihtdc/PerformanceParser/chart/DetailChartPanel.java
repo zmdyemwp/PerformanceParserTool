@@ -454,7 +454,8 @@ public class DetailChartPanel {
             items[i][2] = procDieds.get(i).getPID().toString();
             items[i][3] = procDieds.get(i).getUser().toString();
             items[i][4] = procDieds.get(i).getOomAdj().toString();
-            items[i][5] = procDieds.get(i).getProcState().toString();
+            //items[i][5] = procDieds.get(i).getProcState().toString();
+            items[i][5] = procDieds.get(i).getProcStateDetail();
         }
 
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
@@ -697,11 +698,12 @@ public class DetailChartPanel {
             mFrameDropTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
             return;
         }
-        String[] title = {Const.Panel.TIME, Const.Panel.FRAME_DROP};
+        String[] title = {Const.Panel.TIME, Const.Panel.PID, Const.Panel.FRAME_DROP};
         String[][] items = new String[framedrop.size()][title.length];
         for(int i = 0; i < framedrop.size(); i++) {
             items[i][0] = format.format(framedrop.get(i).getTime());
-            items[i][1] = framedrop.get(i).getFrameDrop().toString();
+            items[i][1] = framedrop.get(i).getPID().toString();
+            items[i][2] = framedrop.get(i).getFrameDrop().toString();
         }
         AppinfoTableModel appTM = new AppinfoTableModel(title, items);
         mFrameDropTable.setModel(appTM);

@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 
 /**
@@ -348,6 +349,18 @@ public class AlogEventParser {
         }
     }
 
+    
+    String getStrFromLine(String line, int index) {
+        String result = "";
+        try {
+            String[] strs = line.split(" +");
+            result = strs[index];
+        } catch (Exception ex) {
+            debugmsg(ex.getLocalizedMessage());
+        }
+        return result;
+    }
+    
     String getTagFromLine(String line) {
         String result = "";
         try {
@@ -362,6 +375,10 @@ public class AlogEventParser {
             debugmsg(ex.getLocalizedMessage());
         }
         return result;
+    }
+    
+    String getPIDFromLine(String line) {
+        return getStrFromLine(line, 2);
     }
 
     private boolean mIsCurrentYearSet = false;
@@ -870,9 +887,9 @@ public class AlogEventParser {
             pid = Integer.parseInt(params[1]);
             process_name = params[2];
             if(3 < params.length) oom_adj = Integer.parseInt(params[3]);
-            else oom_adj = new Integer(0);
+            else oom_adj = new Integer(-10000);
             if(4 < params.length) proc_state = Integer.parseInt(params[4]);
-            else proc_state = new Integer(0);
+            else proc_state = new Integer(-999);
         }
         Integer user;
         Integer pid;
@@ -909,9 +926,43 @@ public class AlogEventParser {
             return proc_state;
         }
         
+        public String getProcStateDetail() {
+            String result;
+            String msg = dic.get(proc_state);
+            if(null == msg || msg.isEmpty()) {
+                result = "N/A";
+            } else {
+                result = String.format("(%d)%s", proc_state, dic.get(proc_state));
+            }
+            return result;
+        }
+        
         public String toString() {
             return super.toString() + String.format(",%d,%d,%s,%d,%d", user, pid, process_name, oom_adj, proc_state);
         }
+        private final Hashtable<Integer,String> dic = new Hashtable<Integer,String>() {
+            private static final long serialVersionUID = 1L;
+            {
+                put(-1, "Process does not exist.");
+                put(0, "Process is a persistent system process.");
+                put(1, "Process is a persistent system process and is doing UI.");
+                put(2, "Process is hosting the current top activities.");
+                put(3, "Process is hosting a foreground service due to a system binding.");
+                put(4, "Process is hosting a foreground service.");
+                put(5, "Process is hosting the current top activities, while device is sleeping.");
+                put(6, "Process is important to the user, and something they are aware of.");
+                put(7, "Process is important to the user, but not something they are aware of.");
+                put(8, "Process is in the background running a backup/restore operation.");
+                put(9, "Process is in the background, but it can't restore its state so we want to try to avoid killing it.");
+                put(10, "Process is in the background running a service.  Unlike oom_adj, this level is used for both the normal running in background state and the executing operations state.");
+                put(11, "Process is in the background running a receiver. Note that from the perspective of oom_adj receivers run at a higher foreground level, but for our prioritization here that is not necessary and putting them below services means many fewer changes in some process states as they receive broadcasts.");
+                put(12, "Process is in the background but hosts the home activity.");
+                put(13, "Process is in the background but hosts the last shown activity.");
+                put(14, "Process is being cached for later use and contains activities.");
+                put(15, "Process is being cached for later use and is a client of another cached process that contains activities.");
+                put(16, "Process is being cached for later use and is empty.");
+            }
+        };
     }
     private static ArrayList<ProcDied> sProcDied = new ArrayList<ProcDied>();
     public ArrayList<ProcDied> getProcDied(long starttime, long endtime) {
@@ -1456,7 +1507,22 @@ public class AlogEventParser {
                 String value = line.substring(line.indexOf(":", index) + 1).trim();
                 frame_drop = Integer.parseInt(value);
             }
+            String strPID = getPIDFromLine(line);
+            if(!strPID.isEmpty()) {
+                try {
+                    pid = Integer.parseInt(strPID);
+                } catch (Exception ex) {
+                    debugmsg(ex.getLocalizedMessage());
+                    pid = 0;
+                }
+            } else {
+                pid = 0;
+            }
         }
+        public Integer getPID() {
+            return pid;
+        }
+        Integer pid = 0;
         public Integer getFrameDrop() {
             return frame_drop;
         }
