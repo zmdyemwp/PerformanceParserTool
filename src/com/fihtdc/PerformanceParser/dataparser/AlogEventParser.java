@@ -1680,6 +1680,10 @@ public class AlogEventParser {
         showBaseEventArrayContent(sBinderSample);
         debugmsg("[sFrameDrop]");
         showBaseEventArrayContent(sFrameDrop);
+        debugmsg("[sLMK]");
+        showBaseEventArrayContent(sLMK);
+        debugmsg("[sResume]");
+        showBaseEventArrayContent(sResume);
     }
 
 

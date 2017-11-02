@@ -421,7 +421,7 @@ public class LineChartPanel {
             screenXYStepRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
             screenXYStepRenderer.setDefaultEntityRadius(6);
             screenXYStepRenderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
-            screenXYStepRenderer.setBaseItemLabelsVisible(true);
+            screenXYStepRenderer.setBaseItemLabelsVisible(false);
             screenXYStepRenderer.setBaseItemLabelFont(new Font("Dialog", 1, 14));
             //screenXYStepRenderer.setBaseItemLabelPaint(paint);
             NumberAxis screenAxis = new NumberAxis();
