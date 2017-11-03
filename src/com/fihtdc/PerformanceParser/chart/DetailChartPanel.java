@@ -407,19 +407,19 @@ public class DetailChartPanel {
             mFocusedTable.setModel(new AppinfoTableModel(new String[0], new String[0][0]));
             return;
         }
-        
+
         String[] title = { Const.Panel.TIME, Const.Panel.COMPONENT_NAME, Const.Panel.REASON, Const.Panel.USER};
-
-        String[][] items = new String[focuseds.size()][title.length];
-
+        String[][] items;
         if(0 < resumes.size()) {
-            for (int i = 0; i < focuseds.size(); i++) {
+            items = new String[resumes.size()][title.length];
+            for (int i = 0; i < resumes.size(); i++) {
                 items[i][0] = format.format(resumes.get(i).getTime());
                 items[i][1] = resumes.get(i).getComponent();
                 items[i][2] = resumes.get(i).getReason();
                 items[i][3] = resumes.get(i).getUser().toString();
             }
         } else {
+            items = new String[focuseds.size()][title.length];
             for (int i = 0; i < focuseds.size(); i++) {
                 items[i][0] = format.format(focuseds.get(i).getTime());
                 items[i][1] = focuseds.get(i).getComponentName();
