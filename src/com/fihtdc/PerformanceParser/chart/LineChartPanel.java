@@ -493,23 +493,23 @@ public class LineChartPanel {
                 TaskSeries mTaskSeries = new TaskSeries(mXYDataSet.getTitle());
                 long start = mAlogEventParser.getStartTime();
                 long end = mAlogEventParser.getEndTime();
+                debugmsg(String.format("setTntervalXYDataset(start = %d, end = %d)", start, end));
                 
-                if(mXYDataSet.getTitle().equals(Const.LineTitles.FOCUSED)) {
+                /*if(mXYDataSet.getTitle().equals(Const.LineTitles.FOCUSED)) {
                     for (int i = 0; i <= mXYDataSet.getItemCount(); i++) {
                         if(i == mXYDataSet.getItemCount()) {
+                            debugmsg(String.format("setTntervalXYDataset(start = %d, end = %d)", start, end));
                             end = mAlogEventParser.getEndTime();
                             Task task = new Task("", new SimpleTimePeriod(start, end));
                             mTaskSeries.add(task);
                         } else {
                             long itemTime = (long) mXYDataSet.getX(i);
                             if(i == 0) {
-                                /*
-                                if(start < itemTime) {
-                                    end = itemTime - 100;
-                                    Task task = new Task("", new SimpleTimePeriod(start, end));
-                                    mTaskSeries.add(task);
-                                }
-                                */
+                                // if(start < itemTime) {
+                                //     end = itemTime - 100;
+                                //     Task task = new Task("", new SimpleTimePeriod(start, end));
+                                //     mTaskSeries.add(task);
+                                // }
                                 start = itemTime;
                             } else {
                                 end = itemTime - 100;
@@ -523,7 +523,7 @@ public class LineChartPanel {
                             }
                         }
                     }
-                } else {
+                } else */{
                     for (int i = 0; i < mXYDataSet.getItemCount(); i++) {
                         Task task = new Task("", new SimpleTimePeriod(
                                 (long) mXYDataSet.getX(i), (long) mXYDataSet.getX(i) + 100));
