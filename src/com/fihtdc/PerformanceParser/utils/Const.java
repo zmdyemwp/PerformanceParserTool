@@ -10,11 +10,11 @@ public final class Const {
         public static final String PERFORMANCE_PARSER = "PerformanceParserTool";
     }
 
-    
+
     public static final class Version {
         public static final String NUMBER = "v1.0.7";
     }
-    
+
     public static final class PathName {
         public static final String DEFAULT_PATH = "\\C:\\";
     }
