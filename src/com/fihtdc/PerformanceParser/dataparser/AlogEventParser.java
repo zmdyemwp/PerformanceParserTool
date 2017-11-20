@@ -101,13 +101,16 @@ public class AlogEventParser {
                 return name.contains("alog") && !name.contains("_");
             }
         });
-        sortFilesInReverseOrder(files);
+        /* Do NOT sort in reverse order to get the last year */
+        //sortFilesInReverseOrder(files);
         for(File f: files) {
             debugmsg(f.getName());
             getCurrentYear(f);              // TODO: try to get year in alog
-            parseFile(f);
+            /* Do NOT parse alog file, since top is no longer needed */
+            //parseFile(f);
         }
 
+        //  TODO; Parse Event Logs
         files = folder.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
@@ -119,6 +122,26 @@ public class AlogEventParser {
             debugmsg(f.getName());
             parseFile(f);
         }
+
+
+
+        //  TODO: Parse Alog if top information is needed
+        if(0 == sCPUInfo.size()) {
+            debugmsg("Event logs did NOT have cpu information, so we need to get TOP information instead.");
+            files = folder.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    String name  = file.getName();
+                    return name.contains("alog") && !name.contains("_");
+                }
+            });
+            for(File f: files) {
+                debugmsg(f.getName());
+                parseFile(f);
+            }
+        }
+
+
     }
 
 
@@ -401,6 +424,8 @@ public class AlogEventParser {
                         mIsCurrentYearSet = true;
                     }
                 }
+                /* Break when got year */
+                if(mIsCurrentYearSet) break;
             }
             bfr.close();
         } catch (Exception ex) {
